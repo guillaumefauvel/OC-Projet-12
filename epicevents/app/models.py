@@ -62,13 +62,14 @@ class Provider(models.Model):
         ('LOGISTIC','LOGICISTIC')
     ]
     
-    name = models.CharField(max_length=100)
+    company_name = models.CharField(max_length=100)
     email = models.CharField(max_length=100, blank=True)
-    phone = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20)
     type = models.CharField(choices=PROVIDER_TYPE, max_length=10)
 
     def __str__(self) -> str:
-        return self.name
+        return self.company_name
+
 
 class Contract(models.Model):
 
@@ -89,6 +90,7 @@ class Contract(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
 
 class Event(models.Model):
 
