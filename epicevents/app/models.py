@@ -4,10 +4,6 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Employee(User):
 
-    
-    
-
-
     USER_TYPE = [
         ('SALES','SALES'),
         ('SUPPORT','SUPPORT'),
@@ -15,7 +11,7 @@ class Employee(User):
     ]
 
     status = models.CharField(max_length=10, choices=USER_TYPE)
-    phone = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
 
@@ -29,7 +25,7 @@ class Employee(User):
 
 class Customer(User):
 
-    phone = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
     company_name = models.CharField(max_length=100)
@@ -37,7 +33,7 @@ class Customer(User):
     last_contact = models.DateField(null=True)
 
     def __str__(self) -> str:
-        return super().__str__()
+        return self.company_name
 
     class Meta:
         verbose_name = ("Customer")
@@ -46,18 +42,33 @@ class Customer(User):
 class Prospect(models.Model):
 
     company_name = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20)
+    email = models.CharField(max_length=100, blank=True)
+    phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
     sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True)
     last_contact = models.DateField(blank=True)
 
+    def __str__(self) -> str:
+        return self.company_name
+
 
 class Provider(models.Model):
 
-    pass
+    PROVIDER_TYPE = [
+        ('FOOD','FOOD'),
+        ('GOODS','GOODS'),
+        ('ANIMATION','ANIMATION'),
+        ('LOGISTIC','LOGICISTIC')
+    ]
+    
+    name = models.CharField(max_length=100)
+    email = models.CharField(max_length=100, blank=True)
+    phone = models.CharField(max_length=20)
+    type = models.CharField(choices=PROVIDER_TYPE, max_length=10)
 
+    def __str__(self) -> str:
+        return self.name
 
 class Contract(models.Model):
 
@@ -76,6 +87,8 @@ class Contract(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
 
+    def __str__(self) -> str:
+        return self.title
 
 class Event(models.Model):
 
@@ -94,3 +107,5 @@ class Event(models.Model):
 
     providers = models.ManyToManyField(Provider)
 
+    def __str__(self) -> str:
+        return self.name
