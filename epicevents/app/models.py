@@ -1,43 +1,9 @@
+from curses.ascii import US
 from django.db import models
-from django.contrib.auth.models import User
 
-# Create your models here.
-class Employee(User):
+from login.models import User
+from django.conf import settings
 
-    USER_TYPE = [
-        ('SALES','SALES'),
-        ('SUPPORT','SUPPORT'),
-        ('MANAGER','MANAGER'),
-    ]
-
-    status = models.CharField(max_length=10, choices=USER_TYPE)
-    phone_number = models.CharField(max_length=20)
-    creation_date = models.DateField(auto_now_add=True)
-    modified_date = models.DateField(auto_now=True)
-
-    def __str__(self) -> str:
-        return super().__str__()
-
-    class Meta:
-        verbose_name = ("Employee")
-        verbose_name_plural = ("Employees")
-
-
-class Customer(User):
-
-    phone_number = models.CharField(max_length=20)
-    creation_date = models.DateField(auto_now_add=True)
-    modified_date = models.DateField(auto_now=True)
-    company_name = models.CharField(max_length=100)
-    sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True)
-    last_contact = models.DateField(null=True)
-
-    def __str__(self) -> str:
-        return self.company_name
-
-    class Meta:
-        verbose_name = ("Customer")
-        verbose_name_plural = ("Customers")
 
 class Prospect(models.Model):
 
@@ -46,7 +12,7 @@ class Prospect(models.Model):
     phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
-    sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True)
+    sales_contact = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='prospect_sales')
     last_contact = models.DateField(blank=True)
 
     def __str__(self) -> str:
@@ -59,7 +25,7 @@ class Provider(models.Model):
         ('FOOD','FOOD'),
         ('GOODS','GOODS'),
         ('ANIMATION','ANIMATION'),
-        ('LOGISTIC','LOGICISTIC')
+        ('LOGISTIC','LOGISTIC')
     ]
     
     company_name = models.CharField(max_length=100)
@@ -75,8 +41,8 @@ class Contract(models.Model):
 
     title = models.CharField(max_length=100)
     
-    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT)
+    customer_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='contract_customer')
+    sales_contact = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='contract_sales')
 
     price = models.IntegerField()
     payed = models.BooleanField(default=False)
@@ -99,8 +65,8 @@ class Event(models.Model):
     program = models.TextField()
     
     contract_id = models.ForeignKey(Contract, on_delete=models.CASCADE)
-    support_id = models.ForeignKey(Employee, on_delete=models.PROTECT)
-    customer_id = models.ForeignKey(Customer, on_delete=models.PROTECT)
+    support_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='event_support')
+    customer_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='event_customer')
     
     due_date = models.DateField()
 

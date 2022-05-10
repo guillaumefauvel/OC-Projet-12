@@ -26,6 +26,13 @@ from app.views import (
     ManagerEventViewSet,
 )
 
+from login.views import (
+    UserCreateAPIView,
+    CustomLoginView,
+    SucessLogin,
+    LogoutView,
+)
+
 router = routers.SimpleRouter()
 
 router.register('employee', ManagerEmployeeViewSet, basename='employee')
@@ -38,5 +45,10 @@ router.register('event', ManagerEventViewSet, basename='event')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
+    
+    path('signup/', UserCreateAPIView.as_view(), name='signup'),
+    path('login/', CustomLoginView.as_view(), name='login'),
+    path('login/success', SucessLogin.as_view(), name='success-login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
 
 ]

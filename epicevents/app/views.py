@@ -9,7 +9,8 @@ from rest_framework.mixins import (
     UpdateModelMixin
 )
 
-from .models import Customer, Employee, Prospect, Provider, Contract, Event
+from login.models import User
+from .models import Prospect, Provider, Contract, Event
 from .serializers import (CustomerSerializer,
                           EmployeeSerializer,
                           ProspectSerializer,
@@ -19,15 +20,16 @@ from .serializers import (CustomerSerializer,
                           )
 
 
-  
-
 class ManagerEmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
+    
     
     serializer_class = EmployeeSerializer
 
     def get_queryset(self):
 
-        return Employee.objects.all()
+        print(self.request.user)
+
+        return User.objects.all()
 
 
 class ManagerCustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
@@ -36,7 +38,7 @@ class ManagerCustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.Generi
 
     def get_queryset(self):
 
-        return Customer.objects.all()
+        return User.objects.all()
     
 
 class ManagerProspectViewSet(ModelViewSet):

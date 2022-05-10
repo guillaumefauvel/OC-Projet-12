@@ -1,12 +1,13 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Customer, Employee, Prospect, Provider, Contract, Event
+from .models import Prospect, Provider, Contract, Event
+from login.models import User
 
 
 class CustomerSerializer(ModelSerializer):
 
     class Meta:
-        model = Customer
+        model = User
         fields = ['id', 
                   'company_name',
                   'first_name',
@@ -14,7 +15,6 @@ class CustomerSerializer(ModelSerializer):
                   'phone_number',
                   'creation_date',
                   'modified_date',
-                  'sales_contact', 
                   'last_contact']
 
 
@@ -23,7 +23,7 @@ class EmployeeSerializer(ModelSerializer):
     # TODO - ADD contracts/events/prospects/customers
     
     class Meta:
-        model = Employee
+        model = User
         fields = ['id', 
                   'status',
                   'first_name',
@@ -32,7 +32,7 @@ class EmployeeSerializer(ModelSerializer):
                   'creation_date',
                   'modified_date',]
 
-    
+
 class ProspectSerializer(ModelSerializer):
     
     class Meta:
@@ -43,9 +43,9 @@ class ProspectSerializer(ModelSerializer):
                   'phone_number',
                   'creation_date',
                   'modified_date',
-                  'sales_contact',
                   'last_contact',]
-        
+
+
 class ProviderSerializer(ModelSerializer):
 
     class Meta:
@@ -55,6 +55,7 @@ class ProviderSerializer(ModelSerializer):
                   'email',
                   'phone_number']
     
+
 class ContractSerializer(ModelSerializer):
     
     class Meta:
@@ -63,7 +64,6 @@ class ContractSerializer(ModelSerializer):
             'id', 
             'title',
             'customer_id',
-            'sales_contact',
             'price',
             'payed',
             'amount_payed',
@@ -72,7 +72,8 @@ class ContractSerializer(ModelSerializer):
             'creation_date',
             'modified_date'
             ]
-        
+
+
 class EventSerializer(ModelSerializer):
     
     class Meta:
