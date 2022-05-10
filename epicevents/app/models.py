@@ -1,7 +1,5 @@
-from curses.ascii import US
 from django.db import models
 
-from login.models import User
 from django.conf import settings
 
 

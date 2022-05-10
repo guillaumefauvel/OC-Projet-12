@@ -28,6 +28,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
+    
     USER_TYPE = [
         ('SALES','SALES'),
         ('SUPPORT','SUPPORT'),
@@ -50,6 +51,8 @@ class User(AbstractUser):
     
     company_name = models.CharField(max_length=100, blank=True, null=True)
     last_contact = models.DateField(null=True, blank=True)
+    sales_contact = models.ForeignKey('self', null=True, blank=True, on_delete=models.PROTECT)
+    
     
     def __str__(self) -> str:
          return super().__str__()

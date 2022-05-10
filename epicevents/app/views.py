@@ -1,7 +1,5 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets
 
 from rest_framework.mixins import (
     ListModelMixin,
@@ -20,19 +18,16 @@ from .serializers import (CustomerSerializer,
                           )
 
 
-class ManagerEmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
-    
+class EmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
     
     serializer_class = EmployeeSerializer
 
     def get_queryset(self):
-
-        print(self.request.user)
-
+        
         return User.objects.all()
 
 
-class ManagerCustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
+class CustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
     
     serializer_class = CustomerSerializer
 
@@ -41,7 +36,7 @@ class ManagerCustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.Generi
         return User.objects.all()
     
 
-class ManagerProspectViewSet(ModelViewSet):
+class ProspectViewSet(ModelViewSet):
     
     serializer_class = ProspectSerializer
 
@@ -50,7 +45,7 @@ class ManagerProspectViewSet(ModelViewSet):
         return Prospect.objects.all()
     
     
-class ManagerProviderViewSet(ModelViewSet):
+class ProviderViewSet(ModelViewSet):
     
     serializer_class = ProviderSerializer
 
@@ -59,7 +54,7 @@ class ManagerProviderViewSet(ModelViewSet):
         return Provider.objects.all()
     
     
-class ManagerContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+class ContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     
     serializer_class = ContractSerializer
 
@@ -68,7 +63,7 @@ class ManagerContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixi
         return Contract.objects.all()
 
 
-class ManagerEventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+class EventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     
     serializer_class = EventSerializer
 

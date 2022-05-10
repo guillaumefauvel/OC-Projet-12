@@ -18,12 +18,12 @@ from django.urls import path, include
 from rest_framework import routers
 
 from app.views import (
-    ManagerEmployeeViewSet,
-    ManagerCustomerViewSet,
-    ManagerProspectViewSet,
-    ManagerProviderViewSet,
-    ManagerContractViewSet,
-    ManagerEventViewSet,
+    EmployeeViewSet,
+    CustomerViewSet,
+    ProspectViewSet,
+    ProviderViewSet,
+    ContractViewSet,
+    EventViewSet,
 )
 
 from login.views import (
@@ -31,24 +31,25 @@ from login.views import (
     CustomLoginView,
     SucessLogin,
     LogoutView,
+    AccountInfoView
 )
 
 router = routers.SimpleRouter()
 
-router.register('employee', ManagerEmployeeViewSet, basename='employee')
-router.register('customer', ManagerCustomerViewSet, basename='customer')
-router.register('prospect', ManagerProspectViewSet, basename='prospect')
-router.register('provider', ManagerProviderViewSet, basename='provider')
-router.register('contract', ManagerContractViewSet, basename='contract')
-router.register('event', ManagerEventViewSet, basename='event')
+router.register('employee', EmployeeViewSet, basename='employee')
+router.register('customer', CustomerViewSet, basename='customer')
+router.register('prospect', ProspectViewSet, basename='prospect')
+router.register('provider', ProviderViewSet, basename='provider')
+router.register('contract', ContractViewSet, basename='contract')
+router.register('event', EventViewSet, basename='event')
+router.register('account', AccountInfoView, basename='account')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),
+    path('home/', include(router.urls)),
     
     path('signup/', UserCreateAPIView.as_view(), name='signup'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('login/success', SucessLogin.as_view(), name='success-login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-
 ]

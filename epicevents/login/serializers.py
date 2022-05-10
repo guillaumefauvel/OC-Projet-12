@@ -5,6 +5,8 @@ from rest_framework.serializers import (
     EmailField,
     ModelSerializer,
     ValidationError,
+    StringRelatedField,
+    SerializerMethodField,
 )
 
 from .models import User
@@ -109,3 +111,33 @@ class UserLoginSerializer(ModelSerializer):
         data['token'] = "SOME RANDOM TOKEN"
 
         return data
+    
+
+class SalesContactSerializer(ModelSerializer):
+    
+    class Meta: 
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number']
+
+
+class AccountSerializer(ModelSerializer):
+    
+    # CUSTOMER SERIALIZER 
+    
+    sales_contact = SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 
+                  'email', 'status', 'phone_number', 'last_contact',
+                  'company_name', 'creation_date', 'modified_date',
+                  'sales_contact', 'last_contact']
+        read_only_fields = ['status', 'company_name']
+
+    def get_sales_contact(self, instance):
+        
+        queryset = User.objects.get(id=instance.sales_contact.id)
+        serializer = SalesContactSerializer(queryset)
+    
+        return serializer.data
+    

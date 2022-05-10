@@ -73,7 +73,6 @@ class ContractSerializer(ModelSerializer):
             'modified_date'
             ]
 
-
 class EventSerializer(ModelSerializer):
     
     class Meta:
