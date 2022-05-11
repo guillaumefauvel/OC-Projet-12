@@ -11,7 +11,7 @@ class Prospect(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
     sales_contact = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='prospect_sales')
-    last_contact = models.DateField(blank=True)
+    last_contact = models.DateField(blank=True, null=True)
 
     def __str__(self) -> str:
         return self.company_name

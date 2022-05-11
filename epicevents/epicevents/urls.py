@@ -35,7 +35,6 @@ from login.views import (
 )
 
 router = routers.SimpleRouter()
-
 router.register('employee', EmployeeViewSet, basename='employee')
 router.register('customer', CustomerViewSet, basename='customer')
 router.register('prospect', ProspectViewSet, basename='prospect')

@@ -51,22 +51,23 @@ class User(AbstractUser):
     def __str__(self) -> str:
          return super().__str__()
      
-     
-class Customer(User):
-    
-    company_name = models.CharField(max_length=100, blank=True, null=True)
-    last_contact = models.DateField(null=True, blank=True)
-    sales_contact = models.ForeignKey('self', null=True, blank=True, on_delete=models.PROTECT)
-    
-    class Meta:
-        verbose_name = ("Customer")
-        verbose_name_plural = ("Customers")
 
 class Employee(User):
        
     company_name = models.CharField(max_length=100, default='EpicEvents', blank=True, null=True)
+    manager = models.ForeignKey('self', null=True, blank=True, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name = ("Employee")
         verbose_name_plural = ("Employees")
     
+    
+class Customer(User):
+    
+    company_name = models.CharField(max_length=100, blank=True, null=True)
+    last_contact = models.DateField(null=True, blank=True)
+    sales_contact = models.ForeignKey(Employee, null=True, blank=True, on_delete=models.PROTECT)
+    
+    class Meta:
+        verbose_name = ("Customer")
+        verbose_name_plural = ("Customers")

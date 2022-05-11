@@ -1,13 +1,13 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, ChoiceField
 
 from .models import Prospect, Provider, Contract, Event
-from login.models import User
+from login.models import User, Customer, Employee
 
 
 class CustomerSerializer(ModelSerializer):
 
     class Meta:
-        model = User
+        model = Customer
         fields = ['id', 
                   'company_name',
                   'first_name',
@@ -43,17 +43,20 @@ class ProspectSerializer(ModelSerializer):
                   'phone_number',
                   'creation_date',
                   'modified_date',
-                  'last_contact',]
+                  'last_contact']
 
 
 class ProviderSerializer(ModelSerializer):
+    
+    type = ChoiceField(choices=Provider.PROVIDER_TYPE)
 
     class Meta:
         model = Provider
         fields = ['id', 
                   'company_name',
                   'email',
-                  'phone_number']
+                  'phone_number', 
+                  'type']
     
 
 class ContractSerializer(ModelSerializer):
@@ -70,8 +73,7 @@ class ContractSerializer(ModelSerializer):
             'contract_infos',
             'signed',
             'creation_date',
-            'modified_date'
-            ]
+            'modified_date']
 
 class EventSerializer(ModelSerializer):
     
