@@ -5,60 +5,48 @@ from rest_framework.serializers import (
     EmailField,
     ModelSerializer,
     ValidationError,
-    StringRelatedField,
     SerializerMethodField,
+    ChoiceField,
 )
 
-from .models import User
+from .models import User, Employee, Customer
 
-class UserCreateSerializer(ModelSerializer):
+class EmployeeCreateSerializer(ModelSerializer):
 
-    email_2 = EmailField(label='Confirm Email')
+    status = ChoiceField(choices=User.USER_TYPE)
 
     class Meta:
-        model = User
+        model = Employee
         fields = [
             'username',
             'first_name',
             'last_name',
+            'phone_number',
             'password',
             'email',
-            'email_2',
-
+            'status',
         ]
         extra_kwargs = {
             'password':{'write_only': True}
         }
-
+    
     def validate_email(self, value):
-        user_qs = User.objects.filter(email=value)
+        user_qs = Employee.objects.filter(email=value)
         if user_qs.exists():
             raise ValidationError('This email is already attach to an account.')
         return value
 
-    def validate_email_2(self, value):
-        data = self.get_initial()
-        email_1 = data.get("email")
-        email_2 = value
-
-        if email_1 != email_2:
-            raise ValidationError('Email must match.')
-
-        return value
-
     def create(self, validated_data):
-        username = validated_data['username']
-        email = validated_data['email']
-        password = validated_data['password']
-        first_name = validated_data['first_name']
-        last_name = validated_data['last_name']
-        user_obj = User(
-            username = username,
-            email = email,
-            first_name = first_name,
-            last_name = last_name
+
+        user_obj = Employee(
+            username = validated_data['username'],
+            email = validated_data['email'],
+            first_name = validated_data['first_name'],
+            last_name = validated_data['last_name'],
+            phone_number = validated_data['phone_number'],
+            status = validated_data['status']
         )
-        user_obj.set_password(password)
+        user_obj.set_password(validated_data['password'])
         user_obj.save()
 
         return validated_data
@@ -120,24 +108,36 @@ class SalesContactSerializer(ModelSerializer):
         fields = ['first_name', 'last_name', 'email', 'phone_number']
 
 
-class AccountSerializer(ModelSerializer):
-    
-    # CUSTOMER SERIALIZER 
-    
+class CustomerAccountSerializer(ModelSerializer):
+        
     sales_contact = SerializerMethodField()
     
     class Meta:
-        model = User
+        model = Customer
         fields = ['id', 'username', 'first_name', 'last_name', 
                   'email', 'status', 'phone_number', 'last_contact',
                   'company_name', 'creation_date', 'modified_date',
                   'sales_contact', 'last_contact']
-        read_only_fields = ['status', 'company_name']
-
+        read_only_fields = ['status', 'company_name', 'sales_contact', 'last_contact']
+        
     def get_sales_contact(self, instance):
         
-        queryset = User.objects.get(id=instance.sales_contact.id)
-        serializer = SalesContactSerializer(queryset)
+        try:
+            queryset = User.objects.get(id=instance.sales_contact.id)
+            serializer = SalesContactSerializer(queryset)
+            
+            return serializer.data
+        
+        except AttributeError:
+            return {}
+            
+
+class EmployeeAccountSerializer(ModelSerializer):  
     
-        return serializer.data
-    
+    class Meta:
+        model = Employee
+        fields = ['id', 'username', 'first_name', 'last_name', 
+                  'email', 'status', 'phone_number',
+                  'company_name', 'creation_date', 'modified_date']
+
+        read_only_fields = ['status', 'company_name']

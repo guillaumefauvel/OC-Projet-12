@@ -27,7 +27,7 @@ from app.views import (
 )
 
 from login.views import (
-    UserCreateAPIView,
+    EmployeeCreateAPIView,
     CustomLoginView,
     SucessLogin,
     LogoutView,
@@ -47,8 +47,8 @@ router.register('account', AccountInfoView, basename='account')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', include(router.urls)),
-    
-    path('signup/', UserCreateAPIView.as_view(), name='signup'),
+
+    path('signup/', EmployeeCreateAPIView.as_view(), name='signup'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('login/success', SucessLogin.as_view(), name='success-login'),
     path('logout/', LogoutView.as_view(), name='logout'),
