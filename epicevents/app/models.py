@@ -63,7 +63,7 @@ class Event(models.Model):
     program = models.TextField()
     
     contract_id = models.ForeignKey(Contract, on_delete=models.CASCADE)
-    support_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='event_support')
+    support_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='event_support')
     customer_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='event_customer')
     
     due_date = models.DateField()

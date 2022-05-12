@@ -24,6 +24,7 @@ from app.views import (
     ProviderViewSet,
     ContractViewSet,
     EventViewSet,
+    NotAssignedEventViewSet,
 )
 
 from login.views import (
@@ -41,6 +42,7 @@ router.register('prospect', ProspectViewSet, basename='prospect')
 router.register('provider', ProviderViewSet, basename='provider')
 router.register('contract', ContractViewSet, basename='contract')
 router.register('event', EventViewSet, basename='event')
+router.register('free-event', NotAssignedEventViewSet, basename='free-event')
 router.register('account', AccountInfoView, basename='account')
 
 urlpatterns = [

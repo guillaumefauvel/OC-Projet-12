@@ -1,3 +1,5 @@
+from curses.ascii import NUL
+from re import A
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import viewsets
 
@@ -19,6 +21,7 @@ from .serializers import (CustomerSerializer,
 
 
 class EmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
+    """ Return the Employee objects attached to the manager """
     
     serializer_class = EmployeeSerializer
 
@@ -36,7 +39,14 @@ class EmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSe
 
 
 class CustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
+    """ 
+    Return the Customers objects linked to their mission : 
     
+    - For the MANAGER : Customers attached to the Employee he manage.
+    - For the SUPPORT : Customers attached to the Event he manage.
+    - For the SALES : Customers that have him as the FK 'Sales_contact'.
+    
+    """
         
     serializer_class = CustomerSerializer
 
@@ -61,25 +71,47 @@ class CustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSe
     
 
 class ProspectViewSet(ModelViewSet):
-    
+    """ Return Prospect objects if the user is an Employee """
     serializer_class = ProspectSerializer
 
     def get_queryset(self):
 
-        return Prospect.objects.all()
+        user_connected = self.request.user.id
+        
+        verify_employee = Employee.objects.filter(id=user_connected)
+        
+        if len(verify_employee) != 0:
+            return Prospect.objects.all()
+        
+        return []
     
     
 class ProviderViewSet(ModelViewSet):
+    """ Return Provider objects if the user is an Employee """
     
     serializer_class = ProviderSerializer
 
     def get_queryset(self):
 
-        return Provider.objects.all()
+        user_connected = self.request.user.id
+        verify_employee = Employee.objects.filter(id=user_connected)
+        
+        if len(verify_employee) != 0:
+            return Provider.objects.all()
+        
+        return []
     
     
 class ContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+    """ 
+    Return the Contracts objects linked to their users : 
     
+    - For the SALES : Contracts that have him as direct a referee with the FK='sales_contact'.
+    - For the CUSTOMER : Contracts that the CUSTOMER his linked with.
+    - For the SUPPORT : Contracts that are linked to the Events the SUPPORT user managed.
+    - For the MANAGER : Contracts associated with the Employees he managed (Only SALES employees for the moment #TODO).
+
+    """
     serializer_class = ContractSerializer
 
     def get_queryset(self):
@@ -113,9 +145,55 @@ class ContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, view
 
 
 class EventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+    """ 
+    Return the Event objects linked to their users : 
+    
+    - For the SALES : Events linked to the contracts he is referred to.
+    - For the CUSTOMER : Events that the CUSTOMER his linked with.
+    - For the SUPPORT : Events referring to him, FK='support_id'
+    - For the MANAGER : Events associated with the Employees he managed (Only Support employees for the moment #TODO).
+
+    """
     
     serializer_class = EventSerializer
 
     def get_queryset(self):
 
-        return Event.objects.all()
+        user_connected = self.request.user.id
+        user_status = User.objects.get(id=user_connected).status
+
+        if user_status == 'SALES':
+            attached_contracts = Contract.objects.filter(sales_contact=user_connected)
+            selected_events = [Event.objects.get(contract_id=contract_ref.id) for contract_ref in attached_contracts]
+            return selected_events
+        if user_status == 'CUSTOMER':
+            selected_events = Event.objects.filter(customer_id=user_connected)
+            return selected_events
+        if user_status == 'SUPPORT':
+            selected_events = Event.objects.filter(support_id=user_connected)
+            return selected_events
+        if user_status == 'MANAGER':
+            managed_employees = [Employee.objects.filter(manager=user_connected)][0]
+            support_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees][0]
+            return support_events
+            
+        return []
+    
+
+class NotAssignedEventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+    """ Return to the Managers the event that has be assign to a support Employee """
+    
+    serializer_class = EventSerializer
+
+    def get_queryset(self):
+
+        user_connected = self.request.user.id
+        user_status = User.objects.get(id=user_connected).status
+        
+        if user_status == 'MANAGER':
+            
+            not_assign_events = Event.objects.filter(support_id=None)
+            
+            return not_assign_events
+            
+        return []
