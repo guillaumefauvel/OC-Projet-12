@@ -71,9 +71,14 @@ class ContractSerializer(ModelSerializer):
             'payed',
             'amount_payed',
             'contract_infos',
+            'employee_signature',
+            'customer_signature',
             'signed',
             'creation_date',
-            'modified_date']
+            'modified_date',
+            'history']
+        
+        read_only_fields = ['signed', 'history']
 
 class EventSerializer(ModelSerializer):
     

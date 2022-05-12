@@ -1,7 +1,7 @@
-from curses.ascii import NUL
 from re import A
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import viewsets
+from rest_framework.decorators import permission_classes
 
 from rest_framework.mixins import (
     ListModelMixin,
@@ -18,6 +18,7 @@ from .serializers import (CustomerSerializer,
                           ContractSerializer,
                           EventSerializer,
                           )
+from login.permissions import IsSuperUser, ProspectPerm, ProviderPerm
 
 
 class EmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
@@ -68,8 +69,9 @@ class CustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSe
             return customers
             
         return []
-    
 
+
+@permission_classes([ProspectPerm])
 class ProspectViewSet(ModelViewSet):
     """ Return Prospect objects if the user is an Employee """
     serializer_class = ProspectSerializer
@@ -85,7 +87,8 @@ class ProspectViewSet(ModelViewSet):
         
         return []
     
-    
+
+@permission_classes([ProspectPerm])
 class ProviderViewSet(ModelViewSet):
     """ Return Provider objects if the user is an Employee """
     
@@ -100,8 +103,8 @@ class ProviderViewSet(ModelViewSet):
             return Provider.objects.all()
         
         return []
-    
-    
+
+
 class ContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     """ 
     Return the Contracts objects linked to their users : 
