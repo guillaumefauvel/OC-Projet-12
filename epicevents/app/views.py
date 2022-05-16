@@ -1,4 +1,3 @@
-from re import A
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import viewsets
 from rest_framework.decorators import permission_classes
@@ -18,8 +17,8 @@ from .serializers import (CustomerSerializer,
                           ContractSerializer,
                           EventSerializer,
                           )
-from login.permissions import IsSuperUser, ProspectPerm, ProviderPerm
-
+from login.permissions import IsSuperUser, ProspectPerm, ProviderPerm, ContractPerm, EventPerm
+from .exceptions import NotAllowedRessource
 
 class EmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
     """ Return the Employee objects attached to the manager """
@@ -88,7 +87,7 @@ class ProspectViewSet(ModelViewSet):
         return []
     
 
-@permission_classes([ProspectPerm])
+@permission_classes([ProviderPerm])
 class ProviderViewSet(ModelViewSet):
     """ Return Provider objects if the user is an Employee """
     
@@ -105,7 +104,8 @@ class ProviderViewSet(ModelViewSet):
         return []
 
 
-class ContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+@permission_classes([ContractPerm])
+class ContractViewSet(ModelViewSet):
     """ 
     Return the Contracts objects linked to their users : 
     
@@ -124,30 +124,24 @@ class ContractViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, view
         
         if user_status == 'SALES':
             contracts_obj = Contract.objects.filter(sales_contact=user_connected)
+            return contracts_obj
         if user_status == 'CUSTOMER':
             contracts_obj = Contract.objects.filter(customer_id=user_connected)
+            return contracts_obj
         if user_status == 'SUPPORT':
             event_managed = Event.objects.filter(support_id=user_connected)
             contracts_obj = [event.contract_id for event in event_managed ]
-            print(contracts_obj)
             return contracts_obj
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
-            contracts_obj = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]
-            return contracts_obj[0]
+            contracts_obj = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees][0]
 
-        return []
-
-    def get_object(self):
-
-        urls_elements = [v for v in str(self.request).split('/') if v.isnumeric()]
-
-        contributor_user = Contract.objects.get(id=urls_elements[0])
-
-        return contributor_user
+            return contracts_obj
 
 
-class EventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+
+@permission_classes([EventPerm])
+class EventViewSet(ModelViewSet):
     """ 
     Return the Event objects linked to their users : 
     
@@ -179,14 +173,13 @@ class EventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewset
             managed_employees = [Employee.objects.filter(manager=user_connected)][0]
             support_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees][0]
             return support_events
-            
-        return []
-    
-
-class NotAssignedEventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+                
+  
+class NotAssignedEventViewSet(ModelViewSet):
     """ Return to the Managers the event that has be assign to a support Employee """
     
     serializer_class = EventSerializer
+    http_method_names = ['get', 'head', 'put', 'delete']
 
     def get_queryset(self):
 
@@ -198,5 +191,5 @@ class NotAssignedEventViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMix
             not_assign_events = Event.objects.filter(support_id=None)
             
             return not_assign_events
-            
+
         return []
