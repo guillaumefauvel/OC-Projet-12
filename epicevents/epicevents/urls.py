@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from posixpath import basename
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
@@ -21,22 +22,26 @@ from app.views import (
     EmployeeViewSet,
     CustomerViewSet,
     ProspectViewSet,
+    FreeProspectViewSet,
     ProviderViewSet,
     ContractViewSet,
     EventViewSet,
-    NotAssignedEventViewSet)
+    NotAssignedEventViewSet,
+    )
 
 from login.views import (
     EmployeeCreateAPIView,
     CustomLoginView,
     SucessLogin,
     LogoutView,
-    AccountInfoView)
+    AccountInfoView,
+    PasswordUpdate)
 
 router = routers.SimpleRouter()
 router.register('employee', EmployeeViewSet, basename='employee')
 router.register('customer', CustomerViewSet, basename='customer')
 router.register('prospect', ProspectViewSet, basename='prospect')
+router.register('free-prospect', FreeProspectViewSet, basename='free-prospect')
 router.register('provider', ProviderViewSet, basename='provider')
 router.register('contract', ContractViewSet, basename='contract')
 router.register('event', EventViewSet, basename='event')
@@ -51,4 +56,5 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('login/success', SucessLogin.as_view(), name='success-login'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('password-update/', PasswordUpdate.as_view(), name='password-update')
 ]

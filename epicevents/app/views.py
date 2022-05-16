@@ -25,7 +25,7 @@ class SalesManagementSerializerAdapter:
             return self.management_serializer_class
 
         return super().get_serializer_class()
-    
+
 
 class ContractSerializerAdapter:
     """
@@ -48,7 +48,6 @@ class ContractSerializerAdapter:
             return self.sales_serializer_class
 
         return super().get_serializer_class()
-
 
 
 class EmployeeViewSet(ModelViewSet):
@@ -124,6 +123,23 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
             return prospects_attached
         
         return []
+    
+
+@permission_classes([ProspectPerm])
+class FreeProspectViewSet(ModelViewSet):
+    
+    serializer_class = ManagementProspectSerializer
+    
+    def get_queryset(self):
+        
+        user_connected = self.request.user.id
+        user_status = User.objects.get(id=user_connected).status
+        
+        if user_status == 'MANAGER':
+            
+            free_prospect = Prospect.objects.filter(sales_contact=None) 
+            
+            return free_prospect
         
 
 @permission_classes([ProviderPerm])
@@ -167,21 +183,16 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
         
         if user_status == 'SALES':
             contracts_obj = Contract.objects.filter(sales_contact=user_connected)
-            return contracts_obj
-        
         if user_status == 'CUSTOMER':
             contracts_obj = Contract.objects.filter(customer_id=user_connected)
-            return contracts_obj
-        
         if user_status == 'SUPPORT':
             event_managed = Event.objects.filter(support_id=user_connected)
             contracts_obj = [event.contract_id for event in event_managed ]
-            return contracts_obj
-        
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
             contracts_obj = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees][0]
-            return contracts_obj
+        
+        return contracts_obj
 
 
 @permission_classes([EventPerm])
@@ -206,17 +217,15 @@ class EventViewSet(ModelViewSet):
         if user_status == 'SALES':
             attached_contracts = Contract.objects.filter(sales_contact=user_connected)
             selected_events = [Event.objects.get(contract_id=contract_ref.id) for contract_ref in attached_contracts]
-            return selected_events
         if user_status == 'CUSTOMER':
             selected_events = Event.objects.filter(customer_id=user_connected)
-            return selected_events
         if user_status == 'SUPPORT':
             selected_events = Event.objects.filter(support_id=user_connected)
-            return selected_events
         if user_status == 'MANAGER':
             managed_employees = [Employee.objects.filter(manager=user_connected)][0]
-            support_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees][0]
-            return support_events
+            selected_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees][0]
+            
+        return selected_events
 
 
 @permission_classes([FreeEventPerm])

@@ -27,7 +27,8 @@ class CustomerListPerm(permissions.BasePermission):
                
         if view.action == 'destroy':
             return request.user.status == 'MANAGER'
-        
+        return True
+
 
 class ProspectPerm(permissions.BasePermission):
     
@@ -48,6 +49,9 @@ class ProspectPerm(permissions.BasePermission):
 class ProviderPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):
+        
+        if view.action == 'create':
+            return request.user.status == 'MANAGER'
         
         return request.user.status in ['MANAGER', 'SALES', 'SUPPORT']
 
@@ -75,7 +79,8 @@ class ContractPerm(permissions.BasePermission):
         
         elif view.action in ['update', 'partial_update']:
             if not obj.signed:
-                return True
+                if request.user.status in ['CUSTOMER', 'SALES', 'MANAGER']:
+                    return True 
             else:
                 if request.user.status == 'MANAGER':
                     return True
@@ -91,7 +96,6 @@ class EventPerm(permissions.BasePermission):
         
         if view.action == 'create':
             return False
-
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -110,17 +114,10 @@ class FreeEventPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):
         
-        if request.user.status in ['MANAGER', 'SUPPORT']:
-            return True
-        return False
+        if view.action == 'create':
+            return False
+        return True
 
     def has_object_permission(self, request, view, obj):
             
-        if view.action == 'retrieve':
-            return True
-        
-        if view.action in ['update', 'partial_update']:
-            return request.user.status in ['MANAGER', 'SUPPORT']
-
-        if view.action == 'destroy':
-            return request.user.status == 'MANAGER'
+        return True

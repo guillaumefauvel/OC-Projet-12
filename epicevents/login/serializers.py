@@ -1,4 +1,6 @@
 from django.db.models import Q
+from rest_framework import serializers
+from django.contrib.auth import login, authenticate, logout
 
 from rest_framework.serializers import (
     CharField,
@@ -141,3 +143,30 @@ class EmployeeAccountSerializer(ModelSerializer):
                   'company_name', 'creation_date', 'modified_date']
 
         read_only_fields = ['status', 'company_name']
+
+
+class PasswordUpdateSerializer(ModelSerializer):
+
+    new_password = CharField(max_length=128, write_only=True, required=True)
+    old_password = CharField(max_length=128, write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ['old_password', 'new_password']
+
+    def validate_old_password(self, value):
+
+        user = self.context['request'].user
+        
+        if not user.check_password(value):
+            raise serializers.ValidationError({"old_password": "Old password is not correct"})
+        return value
+
+    def update(self, instance, validated_data):
+        
+        user = self.context['request'].user
+
+        instance.set_password(validated_data['new_password'])
+        instance.save()
+
+        return instance

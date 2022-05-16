@@ -6,10 +6,10 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
 
-from .serializers import EmployeeCreateSerializer, EmployeeAccountSerializer, CustomerAccountSerializer
+from .serializers import EmployeeCreateSerializer, EmployeeAccountSerializer, CustomerAccountSerializer, PasswordUpdateSerializer
 from login.models import User, Customer, Employee
 from . import exceptions
 
@@ -28,6 +28,21 @@ class LogoutView(APIView):
 
         return Response({'Disconnected': 'You\'ve successfully logged out'})
 
+
+class PasswordUpdate(UpdateAPIView):
+    
+    serializer_class = PasswordUpdateSerializer
+
+    def get_queryset(self):
+        user_obj = User.objects.get(id=self.request.user.id)
+
+        return user_obj
+
+    def get_object(self):
+       
+        user_obj = User.objects.get(id=self.request.user.id)
+
+        return user_obj
 
 @permission_classes([IsAuthenticated])
 class SucessLogin(APIView):
@@ -60,6 +75,7 @@ class CustomLoginView(LoginView):
 
         return response
     
+
 
 class MultipleSerializerMixin:
     """
