@@ -51,7 +51,6 @@ class CustomLoginView(LoginView):
         if user is None:
             raise exceptions.UserNotFound
         if not user.check_password(password):
-
             raise exceptions.BadPassword
             
         user = authenticate(username=username, password=password)
@@ -61,7 +60,6 @@ class CustomLoginView(LoginView):
 
         return response
     
-
 
 class MultipleSerializerMixin:
     """

@@ -24,16 +24,14 @@ from app.views import (
     ProviderViewSet,
     ContractViewSet,
     EventViewSet,
-    NotAssignedEventViewSet,
-)
+    NotAssignedEventViewSet)
 
 from login.views import (
     EmployeeCreateAPIView,
     CustomLoginView,
     SucessLogin,
     LogoutView,
-    AccountInfoView
-)
+    AccountInfoView)
 
 router = routers.SimpleRouter()
 router.register('employee', EmployeeViewSet, basename='employee')

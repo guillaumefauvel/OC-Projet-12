@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'rest_framework',
     'login',
     'app',
@@ -128,3 +129,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # AUTHENTICATION 
 
 AUTH_USER_MODEL = 'login.User'
+
+# DJANGO REST PARAMS
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}

@@ -1,36 +1,67 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import viewsets
 from rest_framework.decorators import permission_classes
-
-from rest_framework.mixins import (
-    ListModelMixin,
-    RetrieveModelMixin,
-    UpdateModelMixin
-)
 
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
 from .serializers import (CustomerSerializer,
                           EmployeeSerializer,
-                          ProspectSerializer,
+                          SalesProspectSerializer,
+                          ManagementProspectSerializer,
+                          EmployeeCreationContractSerializer,
                           ProviderSerializer,
-                          ContractSerializer,
-                          EventSerializer,
-                          )
-from login.permissions import IsSuperUser, ProspectPerm, ProviderPerm, ContractPerm, EventPerm
-from .exceptions import NotAllowedRessource
+                          EmployeeContractSerializer,
+                          CustomerContractSerializer,
+                          EventSerializer)
+from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm
 
-class EmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
-    """ Return the Employee objects attached to the manager """
+
+class SalesManagementSerializerAdapter:
+
+    management_serializer_class = None
+
+    def get_serializer_class(self):
+
+        if User.objects.get(id=self.request.user.id).status != 'SALES' and self.management_serializer_class is not None:
+            return self.management_serializer_class
+
+        return super().get_serializer_class()
+    
+
+class ContractSerializerAdapter:
+    """
+    Adapt the serializer used for the contract management based on the type of user and based on the action type.
+    
+    - For the user, return the default serializer
+    - For the Employee, return the sales_serializer_class if he is on the retrieve view
+    - For the Employee, return the sales_list_serializer_class if he is on the list view
+    
+    """
+
+    sales_serializer_class = None
+    sales_list_serializer_class = None
+
+    def get_serializer_class(self):
+                
+        if self.request.user.status != 'CUSTOMER' and self.sales_list_serializer_class is not None and self.action == 'create':
+            return self.sales_list_serializer_class
+        if self.request.user.status != 'CUSTOMER' and self.sales_serializer_class is not None and self.action != 'create':
+            return self.sales_serializer_class
+
+        return super().get_serializer_class()
+
+
+
+class EmployeeViewSet(ModelViewSet):
+    """ Return the Employees objects attached to the manager """
     
     serializer_class = EmployeeSerializer
+    http_method_names = ['get', 'head', 'put', 'delete']
 
     def get_queryset(self):
 
         user_connected = self.request.user.id
         user_status = User.objects.get(id=user_connected).status
 
-        # TODO - Voir pour implémenter cet élément là avec un décorateur
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
             return managed_employees
@@ -38,17 +69,19 @@ class EmployeeViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSe
         return []
 
 
-class CustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
+@permission_classes([CustomerListPerm])
+class CustomerViewSet(ModelViewSet):
     """ 
     Return the Customers objects linked to their mission : 
-    
+
     - For the MANAGER : Customers attached to the Employee he manage.
     - For the SUPPORT : Customers attached to the Event he manage.
     - For the SALES : Customers that have him as the FK 'Sales_contact'.
     
     """
-        
+
     serializer_class = CustomerSerializer
+    http_method_names = ['get', 'head', 'put', 'delete']
 
     def get_queryset(self):
 
@@ -71,21 +104,27 @@ class CustomerViewSet(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSe
 
 
 @permission_classes([ProspectPerm])
-class ProspectViewSet(ModelViewSet):
-    """ Return Prospect objects if the user is an Employee """
-    serializer_class = ProspectSerializer
-
+class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
+    """ Return Prospect objects associated to the Sales-Employee or the Manager-Employee """
+    
+    serializer_class = SalesProspectSerializer
+    management_serializer_class = ManagementProspectSerializer
+    
     def get_queryset(self):
 
-        user_connected = self.request.user.id
-        
-        verify_employee = Employee.objects.filter(id=user_connected)
-        
-        if len(verify_employee) != 0:
-            return Prospect.objects.all()
+        user_connected = self.request.user.id  
+        user_status = User.objects.get(id=user_connected).status
+
+        if user_status == 'SALES':
+            prospects_attached = Prospect.objects.filter(sales_contact=user_connected)
+            return prospects_attached
+        if user_status == 'MANAGER':
+            managed_employee = Employee.objects.filter(manager=user_connected)
+            prospects_attached = [Prospect.objects.filter(sales_contact=employee) for employee in managed_employee][0]
+            return prospects_attached
         
         return []
-    
+        
 
 @permission_classes([ProviderPerm])
 class ProviderViewSet(ModelViewSet):
@@ -105,7 +144,7 @@ class ProviderViewSet(ModelViewSet):
 
 
 @permission_classes([ContractPerm])
-class ContractViewSet(ModelViewSet):
+class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     """ 
     Return the Contracts objects linked to their users : 
     
@@ -115,29 +154,34 @@ class ContractViewSet(ModelViewSet):
     - For the MANAGER : Contracts associated with the Employees he managed (Only SALES employees for the moment #TODO).
 
     """
-    serializer_class = ContractSerializer
+    serializer_class = CustomerContractSerializer
+    sales_serializer_class = EmployeeContractSerializer
+    sales_list_serializer_class = EmployeeCreationContractSerializer
 
+    filterset_fields = ['sales_contact']
+    
     def get_queryset(self):
-        
+                
         user_connected = self.request.user.id
         user_status = User.objects.get(id=user_connected).status
         
         if user_status == 'SALES':
             contracts_obj = Contract.objects.filter(sales_contact=user_connected)
             return contracts_obj
+        
         if user_status == 'CUSTOMER':
             contracts_obj = Contract.objects.filter(customer_id=user_connected)
             return contracts_obj
+        
         if user_status == 'SUPPORT':
             event_managed = Event.objects.filter(support_id=user_connected)
             contracts_obj = [event.contract_id for event in event_managed ]
             return contracts_obj
+        
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
             contracts_obj = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees][0]
-
             return contracts_obj
-
 
 
 @permission_classes([EventPerm])
@@ -173,8 +217,9 @@ class EventViewSet(ModelViewSet):
             managed_employees = [Employee.objects.filter(manager=user_connected)][0]
             support_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees][0]
             return support_events
-                
-  
+
+
+@permission_classes([FreeEventPerm])
 class NotAssignedEventViewSet(ModelViewSet):
     """ Return to the Managers the event that has be assign to a support Employee """
     

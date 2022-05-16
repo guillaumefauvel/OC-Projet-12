@@ -15,7 +15,9 @@ class CustomerSerializer(ModelSerializer):
                   'phone_number',
                   'creation_date',
                   'modified_date',
-                  'last_contact']
+                  'last_contact', 
+                  'sales_contact']
+        read_only_fields = ['sales_contact']
 
 
 class EmployeeSerializer(ModelSerializer):
@@ -33,14 +35,30 @@ class EmployeeSerializer(ModelSerializer):
                   'modified_date',]
 
 
-class ProspectSerializer(ModelSerializer):
-    
+class SalesProspectSerializer(ModelSerializer):
+
     class Meta:
         model = Prospect
         fields = ['id', 
                   'company_name',
                   'email',
                   'phone_number',
+                  'sales_contact',
+                  'creation_date',
+                  'modified_date',
+                  'last_contact']
+        read_only_fields = ['sales_contact']
+        
+        
+class ManagementProspectSerializer(ModelSerializer):
+
+    class Meta:
+        model = Prospect
+        fields = ['id', 
+                  'company_name',
+                  'email',
+                  'phone_number',
+                  'sales_contact',
                   'creation_date',
                   'modified_date',
                   'last_contact']
@@ -59,7 +77,53 @@ class ProviderSerializer(ModelSerializer):
                   'type']
     
 
-class ContractSerializer(ModelSerializer):
+class EmployeeContractSerializer(ModelSerializer):
+    
+    class Meta:
+        model = Contract
+        fields = [
+            'id', 
+            'title',
+            'customer_id',
+            'sales_contact',
+            'price',
+            'payed',
+            'amount_payed',
+            'contract_infos',
+            'employee_signature',
+            'customer_signature',
+            'signed',
+            'creation_date',
+            'modified_date',
+            'history']
+        
+        read_only_fields = ['signed', 'history', 'customer_signature', 'customer_id', 'sales_contact']
+
+
+class EmployeeCreationContractSerializer(ModelSerializer):
+    
+    class Meta:
+        model = Contract
+        fields = [
+            'id', 
+            'title',
+            'customer_id',
+            'sales_contact',
+            'price',
+            'payed',
+            'amount_payed',
+            'contract_infos',
+            'employee_signature',
+            'customer_signature',
+            'signed',
+            'creation_date',
+            'modified_date',
+            'history']
+        
+        read_only_fields = ['history', 'customer_signature', 'signed']
+
+
+class CustomerContractSerializer(ModelSerializer):
     
     class Meta:
         model = Contract
@@ -78,7 +142,8 @@ class ContractSerializer(ModelSerializer):
             'modified_date',
             'history']
         
-        read_only_fields = ['signed', 'history']
+        read_only_fields = ['signed', 'history', 'employee_signature', 'price',
+                            'payed', 'amount_payed', 'customer_id', 'title']
 
 class EventSerializer(ModelSerializer):
     

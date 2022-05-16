@@ -17,6 +17,18 @@ class IsSuperUser(permissions.BasePermission):
         return request.user.is_superuser
 
 
+class CustomerListPerm(permissions.BasePermission):
+    
+    def has_permission(self, request, view):
+        
+        return True
+
+    def has_object_permission(self, request, view, obj):
+               
+        if view.action == 'destroy':
+            return request.user.status == 'MANAGER'
+        
+
 class ProspectPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):
@@ -51,6 +63,9 @@ class ContractPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):
 
+        if view.action == 'create':
+            if request.user.status in ['CUSTOMER', 'SUPPORT']:
+                return False
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -74,6 +89,9 @@ class EventPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):
         
+        if view.action == 'create':
+            return False
+
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -88,5 +106,21 @@ class EventPerm(permissions.BasePermission):
             return request.user.status == 'MANAGER'
 
 
+class FreeEventPerm(permissions.BasePermission):
+    
+    def has_permission(self, request, view):
+        
+        if request.user.status in ['MANAGER', 'SUPPORT']:
+            return True
+        return False
 
+    def has_object_permission(self, request, view, obj):
+            
+        if view.action == 'retrieve':
+            return True
+        
+        if view.action in ['update', 'partial_update']:
+            return request.user.status in ['MANAGER', 'SUPPORT']
 
+        if view.action == 'destroy':
+            return request.user.status == 'MANAGER'

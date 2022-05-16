@@ -1,7 +1,7 @@
 from django.db import models
-
 from django.conf import settings
 
+from login.models import Customer, Employee
 
 class Prospect(models.Model):
 
@@ -10,7 +10,7 @@ class Prospect(models.Model):
     phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
-    sales_contact = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='prospect_sales')
+    sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True, related_name='prospect_sales')
     last_contact = models.DateField(blank=True, null=True)
 
     def __str__(self) -> str:
@@ -39,8 +39,8 @@ class Contract(models.Model):
 
     title = models.CharField(max_length=100)
     
-    customer_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='contract_customer')
-    sales_contact = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='contract_sales')
+    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='contract_customer')
+    sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name='contract_sales')
 
     price = models.IntegerField()
     payed = models.BooleanField(default=False)
@@ -66,8 +66,8 @@ class Event(models.Model):
     program = models.TextField()
     
     contract_id = models.ForeignKey(Contract, on_delete=models.CASCADE)
-    support_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='event_support')
-    customer_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='event_customer')
+    support_id = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True, related_name='event_support')
+    customer_id = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='event_customer')
     
     due_date = models.DateField()
 
