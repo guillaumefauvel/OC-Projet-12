@@ -229,3 +229,30 @@ class ProspectSerializerSynthetic(ModelSerializer):
         fields = ['id', 
                   'company_name',
                   'last_contact']
+
+
+class EmployeeSignedContractSerializer(ModelSerializer):
+    
+    class Meta:
+        model = Contract
+        fields = [
+            'id', 
+            'title',
+            'customer_id',
+            'sales_contact',
+            'price',
+            'payed',
+            'amount_payed',
+            'contract_infos',
+            'employee_signature',
+            'customer_signature',
+            'signed',
+            'creation_date',
+            'modified_date',
+            'history']
+        
+        read_only_fields = ['title', 'customer_id', 'sales_contact', 'price', 
+                            'contract_infos', 'employee_signature', 'customer_signature',
+                            'signed', 'creation_date', 'modified_date', 'history']
+        
+

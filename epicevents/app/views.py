@@ -1,3 +1,4 @@
+from ast import arg
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
@@ -11,9 +12,9 @@ from .serializers import (CustomerSerializer,
                           ProviderSerializer,
                           EmployeeContractSerializer,
                           CustomerContractSerializer,
+                          EmployeeSignedContractSerializer,
                           EventSerializer)
 from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm
-from django.shortcuts import redirect
 
 
 class SalesManagementSerializerAdapter:
@@ -33,16 +34,25 @@ class ContractSerializerAdapter:
     Adapt the serializer used for the contract management based on the type of user and based on the action type.
     
     - For the user, return the default serializer
-    - For the Employee, return the sales_serializer_class if he is on the retrieve view
-    - For the Employee, return the sales_list_serializer_class if he is on the list view
+    - For the Employee, return the 'sales_serializer_class' if he is on the retrieve view
+    - For the Employee, return the 'sales_list_serializer_class' if he is on the list view
+    - For the Employee, return the 'sales_signed_contract_serializer_class' if the contract is signed - It will limit his update
     
     """
 
     sales_serializer_class = None
     sales_list_serializer_class = None
-
+    sales_signed_contract_serializer_class = None
+    
     def get_serializer_class(self):
-                
+        
+        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
+        if len(id_refs) > 0:
+            contract_obj = Contract.objects.get(id=id_refs[0])
+        
+            if self.request.user.status != 'CUSTOMER' and self.sales_signed_contract_serializer_class is not None and contract_obj.signed == True:
+                return self.sales_signed_contract_serializer_class
+            
         if self.request.user.status != 'CUSTOMER' and self.sales_list_serializer_class is not None and self.action == 'create':
             return self.sales_list_serializer_class
         if self.request.user.status != 'CUSTOMER' and self.sales_serializer_class is not None and self.action != 'create':
@@ -158,8 +168,8 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
             return prospects_attached
                 
         return []
-        
-
+    
+    
 @permission_classes([ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
     
@@ -205,14 +215,15 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     - For the MANAGER : Contracts associated with the Employees he managed (Only SALES employees for the moment #TODO).
 
     """
+    
     serializer_class = CustomerContractSerializer
     sales_serializer_class = EmployeeContractSerializer
     sales_list_serializer_class = EmployeeCreationContractSerializer
-
-    filterset_fields = ['sales_contact']
+    sales_signed_contract_serializer_class = EmployeeSignedContractSerializer
     
+    filterset_fields = ['sales_contact']
     def get_queryset(self):
-                
+        
         user_connected = self.request.user.id
         user_status = User.objects.get(id=user_connected).status
         
@@ -229,6 +240,23 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
         
         return contracts_obj
 
+    def get_object(self):
+        
+        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
+        contract_obj = Contract.objects.get(id=id_refs[0])
+        
+        if self.request.method == 'PUT':
+            if 'customer_signature' in list(self.request.data):
+                if contract_obj.employee_signature == True:
+                    contract_obj.signed = True
+                    contract_obj.save()
+            if 'employee_signature' in list(self.request.data):
+                if contract_obj.customer_signature == True:
+                    contract_obj.signed = True
+                    contract_obj.save()
+
+        return contract_obj 
+        
 
 @permission_classes([EventPerm])
 class EventViewSet(ModelViewSet):
@@ -284,6 +312,3 @@ class NotAssignedEventViewSet(ModelViewSet):
         return []
     
 
-class RecapViewset(ModelViewSet):
-    
-    pass
