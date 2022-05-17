@@ -1,6 +1,6 @@
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
-
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
 from .serializers import (CustomerSerializer,
@@ -13,6 +13,7 @@ from .serializers import (CustomerSerializer,
                           CustomerContractSerializer,
                           EventSerializer)
 from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm
+from django.shortcuts import redirect
 
 
 class SalesManagementSerializerAdapter:
@@ -109,21 +110,55 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
     serializer_class = SalesProspectSerializer
     management_serializer_class = ManagementProspectSerializer
     
-    def get_queryset(self):
+    def get_queryset(self, *args, **kwargs):
 
         user_connected = self.request.user.id  
         user_status = User.objects.get(id=user_connected).status
+        
+        # ---
+        # CHANGE PLACE
+        # ---        
+        if self.request.method == 'PUT':
+            data_dict = self.request.data
 
+            try:
+                if data_dict['converted'] == 'true':
+                    
+                    new_user = Customer.objects.create(company_name=data_dict['company_name'],
+                                                        username=str(data_dict['first_name'])+str(data_dict['last_name']),
+                                                        first_name=data_dict['first_name'],
+                                                        last_name=data_dict['first_name'],
+                                                        email=data_dict['email'],
+                                                        phone_number=data_dict['phone_number'],
+                                                        sales_contact=Employee.objects.get(id=data_dict['sales_contact']),
+                                                        status='CUSTOMER')
+                    if len(data_dict['last_contact']) != 0:
+                        new_user.last_contact = data_dict['last_contact']
+                    new_user.set_password('password-oc')
+                    new_user.save()        
+                    
+                    prospect_object = Prospect.objects.get(email=data_dict['email'])        
+                    prospect_object.delete()
+                    
+                    return 
+            except KeyError:
+                pass
+        
+        # ---
+        # ---
+        
         if user_status == 'SALES':
             prospects_attached = Prospect.objects.filter(sales_contact=user_connected)
             return prospects_attached
         if user_status == 'MANAGER':
             managed_employee = Employee.objects.filter(manager=user_connected)
-            prospects_attached = [Prospect.objects.filter(sales_contact=employee) for employee in managed_employee][0]
+            prospects_attached = [Prospect.objects.filter(sales_contact=employee) for employee in managed_employee]
+            if len(prospects_attached) > 0:
+                prospects_attached = prospects_attached[0]
             return prospects_attached
-        
+                
         return []
-    
+        
 
 @permission_classes([ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
@@ -140,7 +175,7 @@ class FreeProspectViewSet(ModelViewSet):
             free_prospect = Prospect.objects.filter(sales_contact=None) 
             
             return free_prospect
-        
+
 
 @permission_classes([ProviderPerm])
 class ProviderViewSet(ModelViewSet):

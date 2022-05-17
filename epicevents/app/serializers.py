@@ -23,13 +23,10 @@ class CustomerSerializer(ModelSerializer):
 
 
 class EmployeeSerializer(ModelSerializer):
-    
-    # TODO - ADD contracts/events/prospects/customers
-    
+      
     events = SerializerMethodField()
     contracts = SerializerMethodField()
     prospects = SerializerMethodField()
-
 
     class Meta:
         model = User
@@ -42,8 +39,8 @@ class EmployeeSerializer(ModelSerializer):
                   'events',
                   'contracts', 
                   'prospects']
-    
-    
+
+
     def get_events(self, instance):
 
         events = Event.objects.filter(support_id=instance.id).filter(due_date__lte=date.today().strftime("%Y-%m-%d"))
@@ -55,7 +52,7 @@ class EmployeeSerializer(ModelSerializer):
         contracts = Contract.objects.filter(sales_contact=instance.id).filter(signed=False)
         serializer = ContractSerializerSynthetic(contracts, many=True)
         return serializer.data
-    
+
     def get_prospects(self, instance):
         
         contracts = Prospect.objects.filter(sales_contact=instance.id)
@@ -70,11 +67,14 @@ class SalesProspectSerializer(ModelSerializer):
         fields = ['id', 
                   'company_name',
                   'email',
+                  'first_name',
+                  'last_name',
                   'phone_number',
                   'sales_contact',
                   'creation_date',
                   'modified_date',
-                  'last_contact']
+                  'last_contact', 
+                  'converted']
         read_only_fields = ['sales_contact']
         
         
@@ -84,12 +84,15 @@ class ManagementProspectSerializer(ModelSerializer):
         model = Prospect
         fields = ['id', 
                   'company_name',
+                  'first_name',
+                  'last_name',
                   'email',
                   'phone_number',
                   'sales_contact',
                   'creation_date',
                   'modified_date',
-                  'last_contact']
+                  'last_contact', 
+                  'converted']
 
 
 class ProviderSerializer(ModelSerializer):

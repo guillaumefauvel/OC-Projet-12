@@ -6,12 +6,15 @@ from login.models import Customer, Employee
 class Prospect(models.Model):
 
     company_name = models.CharField(max_length=100)
-    email = models.CharField(max_length=100, blank=True)
+    email = models.CharField(max_length=100, blank=True, unique=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
     sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True, related_name='prospect_sales')
     last_contact = models.DateField(blank=True, null=True)
+    converted = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.company_name
@@ -28,7 +31,7 @@ class Provider(models.Model):
         ('ANIMATION','ANIMATION'),
         ('LOGISTIC','LOGISTIC')
     ]
-    
+
     company_name = models.CharField(max_length=100)
     email = models.CharField(max_length=100, blank=True)
     phone_number = models.CharField(max_length=20)

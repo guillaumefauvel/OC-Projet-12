@@ -24,9 +24,8 @@ class User(AbstractUser):
 
     status = models.CharField(max_length=10, default=USER_TYPE, null=True)
 
-    def __str__(self) -> str:
-         return super().__str__()
-     
+    def __str__(self):
+         return self.username
 
     class Meta:
         ordering = ['status']
