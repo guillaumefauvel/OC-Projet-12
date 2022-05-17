@@ -247,3 +247,8 @@ class NotAssignedEventViewSet(ModelViewSet):
             return not_assign_events
 
         return []
+    
+
+class RecapViewset(ModelViewSet):
+    
+    pass

@@ -1,4 +1,6 @@
-from rest_framework.serializers import ModelSerializer, ChoiceField
+from datetime import date
+
+from rest_framework.serializers import ModelSerializer, ChoiceField, SerializerMethodField
 
 from .models import Prospect, Provider, Contract, Event
 from login.models import User, Customer, Employee
@@ -24,15 +26,41 @@ class EmployeeSerializer(ModelSerializer):
     
     # TODO - ADD contracts/events/prospects/customers
     
+    events = SerializerMethodField()
+    contracts = SerializerMethodField()
+    prospects = SerializerMethodField()
+
+
     class Meta:
         model = User
         fields = ['id', 
+                  'username',
                   'status',
                   'first_name',
                   'last_name',
                   'phone_number',
-                  'creation_date',
-                  'modified_date',]
+                  'events',
+                  'contracts', 
+                  'prospects']
+    
+    
+    def get_events(self, instance):
+
+        events = Event.objects.filter(support_id=instance.id).filter(due_date__lte=date.today().strftime("%Y-%m-%d"))
+        serializer = EventSerializerSynthetic(events, many=True)
+        return serializer.data
+
+    def get_contracts(self, instance):
+        
+        contracts = Contract.objects.filter(sales_contact=instance.id).filter(signed=False)
+        serializer = ContractSerializerSynthetic(contracts, many=True)
+        return serializer.data
+    
+    def get_prospects(self, instance):
+        
+        contracts = Prospect.objects.filter(sales_contact=instance.id)
+        serializer = ProspectSerializerSynthetic(contracts, many=True)
+        return serializer.data
 
 
 class SalesProspectSerializer(ModelSerializer):
@@ -162,3 +190,39 @@ class EventSerializer(ModelSerializer):
             'modified_date',
             'providers'
             ]
+        
+    
+class EventSerializerSynthetic(ModelSerializer):
+    
+    class Meta:
+        model = Event
+        fields = [
+            'id', 
+            'name',
+            'contract_id',
+            'customer_id',
+            'due_date',
+            ]
+        
+
+class ContractSerializerSynthetic(ModelSerializer):
+    
+    class Meta:
+        model = Contract
+        fields = [
+            'id', 
+            'title',
+            'customer_id',
+            'payed',
+            'employee_signature',
+            'customer_signature',
+            'signed']
+
+
+class ProspectSerializerSynthetic(ModelSerializer):
+
+    class Meta:
+        model = Prospect
+        fields = ['id', 
+                  'company_name',
+                  'last_contact']

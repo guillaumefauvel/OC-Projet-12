@@ -28,6 +28,9 @@ class User(AbstractUser):
          return super().__str__()
      
 
+    class Meta:
+        ordering = ['status']
+    
 class Employee(User):
        
     company_name = models.CharField(max_length=100, default='EpicEvents', blank=True, null=True)
@@ -47,3 +50,4 @@ class Customer(User):
     class Meta:
         verbose_name = ("Customer")
         verbose_name_plural = ("Customers")
+        ordering = ['last_contact']

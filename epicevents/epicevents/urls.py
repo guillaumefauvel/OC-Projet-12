@@ -48,6 +48,7 @@ router.register('event', EventViewSet, basename='event')
 router.register('free-event', NotAssignedEventViewSet, basename='free-event')
 router.register('account', AccountInfoView, basename='account')
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', include(router.urls)),

@@ -16,6 +16,9 @@ class Prospect(models.Model):
     def __str__(self) -> str:
         return self.company_name
 
+    class Meta:
+        ordering = ['last_contact']
+
 
 class Provider(models.Model):
 

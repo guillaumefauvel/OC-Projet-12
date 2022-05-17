@@ -29,6 +29,7 @@ class LogoutView(APIView):
         return Response({'Disconnected': 'You\'ve successfully logged out'})
 
 
+@permission_classes([IsAuthenticated])
 class PasswordUpdate(UpdateAPIView):
     
     serializer_class = PasswordUpdateSerializer
