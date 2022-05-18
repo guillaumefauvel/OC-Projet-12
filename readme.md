@@ -45,10 +45,10 @@
 | `home/contract/` | Une liste des contrats affiliés |`GET`|`GET`, `POST`|`GET`|`GET`, `POST`|
 | `home/contract/<contract_id>` | Un contrat |`GET`, `PUT`|`GET`, `PUT`, `DELETE`|`GET`|`GET`, `PUT`, `DELETE`|
 | `home/event/` | Une liste des évènements affiliés |`GET`||`GET`|`GET`|
-| `home/event/<event_id>` | Un contract |`GET`||`GET`|`GET`|
+| `home/event/<event_id>` | Un contract |`GET`||`GET`, `PUT`, `DELETE`|`GET`, `PUT`, `DELETE`|
 | `home/free-event/` | Une liste des évènements non affectés ||||`GET`|
-| `home/free-event/<event_id>` | Un évènement non affecté ||||`GET`|
-| `home/account/` | Les informations de l'utilisateur connecté |`GET`|`GET`|`GET`|`GET`|
+| `home/free-event/<event_id>` | Un évènement non affecté ||||`GET`, `PUT`, `DELETE`|
+| `home/account/` | Les informations de l'utilisateur connecté |`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|
 ||||
 ||||
 
