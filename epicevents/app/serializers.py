@@ -125,10 +125,9 @@ class EmployeeContractSerializer(ModelSerializer):
             'customer_signature',
             'signed',
             'creation_date',
-            'modified_date',
-            'history']
+            'modified_date']
         
-        read_only_fields = ['signed', 'history', 'customer_signature', 'customer_id', 'sales_contact']
+        read_only_fields = ['signed', 'customer_signature', 'customer_id', 'sales_contact']
 
 
 class EmployeeCreationContractSerializer(ModelSerializer):
@@ -148,10 +147,9 @@ class EmployeeCreationContractSerializer(ModelSerializer):
             'customer_signature',
             'signed',
             'creation_date',
-            'modified_date',
-            'history']
+            'modified_date']
         
-        read_only_fields = ['history', 'customer_signature', 'signed']
+        read_only_fields = ['customer_signature', 'signed']
 
 
 class CustomerContractSerializer(ModelSerializer):
@@ -170,11 +168,10 @@ class CustomerContractSerializer(ModelSerializer):
             'customer_signature',
             'signed',
             'creation_date',
-            'modified_date',
-            'history']
+            'modified_date']
         
-        read_only_fields = ['signed', 'history', 'employee_signature', 'price',
-                            'payed', 'amount_payed', 'customer_id', 'title']
+        read_only_fields = ['signed', 'employee_signature', 'price', 'payed',
+                            'amount_payed', 'customer_id', 'title']
 
 class EventSerializer(ModelSerializer):
     
@@ -248,11 +245,10 @@ class EmployeeSignedContractSerializer(ModelSerializer):
             'customer_signature',
             'signed',
             'creation_date',
-            'modified_date',
-            'history']
+            'modified_date']
         
         read_only_fields = ['title', 'customer_id', 'sales_contact', 'price', 
                             'contract_infos', 'employee_signature', 'customer_signature',
-                            'signed', 'creation_date', 'modified_date', 'history']
+                            'signed', 'creation_date', 'modified_date']
         
 

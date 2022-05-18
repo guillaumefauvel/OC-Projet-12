@@ -124,13 +124,30 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
 
         user_connected = self.request.user.id  
         user_status = User.objects.get(id=user_connected).status
-        
-        # ---
-        # CHANGE PLACE
-        # ---        
+                
+        if user_status == 'SALES':
+            prospects_attached = Prospect.objects.filter(sales_contact=user_connected)
+            return prospects_attached
+        if user_status == 'MANAGER':
+            managed_employee = Employee.objects.filter(manager=user_connected)
+            prospects_attached = [Prospect.objects.filter(sales_contact=employee) for employee in managed_employee]
+            if len(prospects_attached) > 0:
+                prospects_attached = prospects_attached[0]
+            return prospects_attached
+                
+        return []
+    
+    def get_object(self):
+
+        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
+        prospect_obj = Prospect.objects.get(id=id_refs[0])
+
         if self.request.method == 'PUT':
             data_dict = self.request.data
 
+            if 'converted' in list(self.request.data):
+                print('yes')
+            
             try:
                 if data_dict['converted'] == 'true':
                     
@@ -153,22 +170,8 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
                     return 
             except KeyError:
                 pass
-        
-        # ---
-        # ---
-        
-        if user_status == 'SALES':
-            prospects_attached = Prospect.objects.filter(sales_contact=user_connected)
-            return prospects_attached
-        if user_status == 'MANAGER':
-            managed_employee = Employee.objects.filter(manager=user_connected)
-            prospects_attached = [Prospect.objects.filter(sales_contact=employee) for employee in managed_employee]
-            if len(prospects_attached) > 0:
-                prospects_attached = prospects_attached[0]
-            return prospects_attached
-                
-        return []
     
+        return prospect_obj
     
 @permission_classes([ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):

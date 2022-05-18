@@ -56,7 +56,6 @@ class Contract(models.Model):
     employee_signature = models.BooleanField(default=False)
     customer_signature = models.BooleanField(default=False)
     signed = models.BooleanField(default=False)
-    history = models.TextField(blank=True, null=True)
 
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
