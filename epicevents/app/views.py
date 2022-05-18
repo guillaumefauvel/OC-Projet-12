@@ -244,19 +244,27 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
         
         id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
         contract_obj = Contract.objects.get(id=id_refs[0])
+        signed = False
         
         if self.request.method == 'PUT':
             if 'customer_signature' in list(self.request.data):
                 if contract_obj.employee_signature == True:
-                    contract_obj.signed = True
-                    contract_obj.save()
-            if 'employee_signature' in list(self.request.data):
+                    contract_obj.customer_signature = True
+                    signed = True
+            elif 'employee_signature' in list(self.request.data):
                 if contract_obj.customer_signature == True:
-                    contract_obj.signed = True
-                    contract_obj.save()
+                    contract_obj.employee_signature = True
+                    signed = True
+            if signed == True:
+                contract_obj.signed = True
+                contract_obj.save()
+                if len(Event.objects.filter(contract_id=contract_obj.id)) == 0:
+                    new_event = Event.objects.create(name=contract_obj.title, 
+                                        contract_id=Contract.objects.get(id=contract_obj.id),
+                                        customer_id=contract_obj.customer_id)
+                    
+        return contract_obj
 
-        return contract_obj 
-        
 
 @permission_classes([EventPerm])
 class EventViewSet(ModelViewSet):

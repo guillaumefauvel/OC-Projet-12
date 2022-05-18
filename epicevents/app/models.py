@@ -68,14 +68,14 @@ class Contract(models.Model):
 class Event(models.Model):
 
     name = models.CharField(max_length=100)
-    description = models.TextField()
-    program = models.TextField()
+    description = models.TextField(blank=True, null=True)
+    program = models.TextField(blank=True, null=True)
     
-    contract_id = models.ForeignKey(Contract, on_delete=models.CASCADE)
+    contract_id = models.ForeignKey(Contract, on_delete=models.CASCADE, unique=True)
     support_id = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True, related_name='event_support')
     customer_id = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='event_customer')
     
-    due_date = models.DateField()
+    due_date = models.DateField(blank=True, null=True)
 
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
