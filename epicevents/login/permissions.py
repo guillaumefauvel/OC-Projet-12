@@ -126,9 +126,12 @@ class FreeEventPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):
         
-        if view.action == 'create':
+        if request.user.status == 'MANAGER':
+            if view.action == 'create':
+                return False
+            return True
+        else:
             return False
-        return True
 
     def has_object_permission(self, request, view, obj):
             

@@ -5,6 +5,7 @@ from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
 from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm
 from . import serializers as appserializers
+from . import filters
 
 class SalesManagementSerializerAdapter:
 
@@ -20,7 +21,7 @@ class SalesManagementSerializerAdapter:
 
 class ContractSerializerAdapter:
     """
-    Adapt the serializer used for the contract management based on the type of user, the action type, and the contract number of signature.
+    Adapt the serializer used for the contract management based on the type of user, the action type, and the number of signature in the contract.
     
     In list mode :
         - For the user, return the default serializer
@@ -48,16 +49,16 @@ class ContractSerializerAdapter:
         if 'pk' in self.kwargs:
             contract_obj = Contract.objects.get(id=self.kwargs['pk'])
 
-            if self.request.user.status != 'CUSTOMER' and self.sales_signed_contract_serializer_class is not None and contract_obj.signed == True:
+            if self.request.user.status != 'CUSTOMER' and contract_obj.signed == True:
                 return self.sales_signed_contract_serializer_class
-            if self.request.user.status == 'CUSTOMER' and self.sales_half_signed_customer_pov is not None and (contract_obj.customer_signature or contract_obj.employee_signature)  == True:
+            if self.request.user.status == 'CUSTOMER' and (contract_obj.customer_signature or contract_obj.employee_signature)  == True:
                 return self.sales_half_signed_customer_pov
-            if self.request.user.status != 'CUSTOMER' and self.sales_half_signed_employee_pov is not None and (contract_obj.customer_signature or contract_obj.employee_signature) == True:
+            if self.request.user.status != 'CUSTOMER' and (contract_obj.customer_signature or contract_obj.employee_signature) == True:
                 return self.sales_half_signed_employee_pov
             
-        if self.request.user.status != 'CUSTOMER' and self.sales_list_serializer_class is not None and self.action == 'create':
+        if self.request.user.status != 'CUSTOMER' and self.action == 'create':
             return self.sales_list_serializer_class
-        if self.request.user.status != 'CUSTOMER' and self.sales_serializer_class is not None and self.action != 'create':
+        if self.request.user.status != 'CUSTOMER' and self.action != 'create':
             return self.sales_serializer_class
 
         return super().get_serializer_class()
@@ -68,6 +69,7 @@ class EmployeeViewSet(ModelViewSet):
     
     serializer_class = appserializers.EmployeeSerializer
     http_method_names = ['get', 'head', 'put', 'delete']
+    filterset_class = filters.EmployeeFilter
 
     def get_queryset(self):
 
@@ -94,6 +96,7 @@ class CustomerViewSet(ModelViewSet):
 
     serializer_class = appserializers.CustomerSerializer
     http_method_names = ['get', 'head', 'put', 'delete']
+    filterset_class = filters.CustomerFilter
 
     def get_queryset(self):
 
@@ -121,7 +124,8 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
     
     serializer_class = appserializers.SalesProspectSerializer
     management_serializer_class = appserializers.ManagementProspectSerializer
-    
+    filterset_class = filters.ProspectFilter
+
     def get_queryset(self, *args, **kwargs):
 
         user_connected = self.request.user.id  
@@ -178,7 +182,8 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
 class FreeProspectViewSet(ModelViewSet):
     
     serializer_class = appserializers.ManagementProspectSerializer
-    
+    filterset_class = filters.ProspectFilter
+
     def get_queryset(self):
         
         user_connected = self.request.user.id
@@ -196,7 +201,8 @@ class ProviderViewSet(ModelViewSet):
     """ Return Provider objects if the user is an Employee """
     
     serializer_class = appserializers.ProviderSerializer
-
+    filterset_class = filters.ProviderFilter
+    
     def get_queryset(self):
 
         user_connected = self.request.user.id
@@ -226,7 +232,9 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     sales_half_signed_employee_pov = appserializers.ContractHalfSignedEmployeePOV
     sales_half_signed_customer_pov = appserializers.ContractHalfSignedCustomerPOV
     sales_signed_contract_serializer_class = appserializers.EmployeeSignedContractSerializer
-        
+    
+    filterset_class = filters.ContractFilter
+    
     def get_queryset(self):
         
         user_connected = self.request.user.id
@@ -283,6 +291,8 @@ class EventViewSet(ModelViewSet):
     """
     
     serializer_class = appserializers.EventSerializer
+    filterset_class = filters.EventFilter
+
 
     def get_queryset(self):
 
@@ -308,7 +318,7 @@ class NotAssignedEventViewSet(ModelViewSet):
     """ Return to the Managers the event that has be assign to a support Employee """
     
     serializer_class = appserializers.EventSerializer
-    http_method_names = ['get', 'head', 'put', 'delete']
+    filterset_class = filters.EventFilter
 
     def get_queryset(self):
 
