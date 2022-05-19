@@ -31,26 +31,29 @@
 
 | Requête | Réponse | Customer | Sales | Support | Manager |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
-| `home` | Un récapitulatif des différents points de terminaison |`GET`|`GET`|`GET`|`GET`|
-| `home/employee/` | Une liste de tous les employés affiliés ||||`GET`|
-| `home/employee/<employee_id>` | Un employé ||||`GET`, `PUT`, `DELETE`|
-| `home/customer/` | Une liste des clients affiliés ||`GET`|`GET`|`GET`|
-| `home/customer/<customer_id>` | Un client ||`GET`|`GET`|`GET`|
-| `home/prospect/` | Une liste des prospects affiliés ||`GET`, `POST`||`GET`|
-| `home/prospect/<prospect_id>` | Un prospect ||`GET`, `PUT`||`GET`, `PUT`, `DELETE`|
-| `home/free-prospect/` | Une liste des prospects non affectés ||`GET`||`GET`|
-| `home/free-prospect/<prospect_id>` | Une prospect non affecté ||`GET`||`GET`|
-| `home/provider/` | Une liste des fournisseurs ||`GET`|`GET`|`GET`, `POST`|
-| `home/provider/<provider_id>` | Un fournisseur ||`GET`|`GET`|`GET`, `PUT`, `DELETE`|
-| `home/contract/` | Une liste des contrats affiliés |`GET`|`GET`, `POST`|`GET`|`GET`, `POST`|
-| `home/contract/<contract_id>` | Un contrat |`GET`, `PUT`|`GET`, `PUT`, `DELETE`|`GET`|`GET`, `PUT`, `DELETE`|
-| `home/event/` | Une liste des évènements affiliés |`GET`||`GET`|`GET`|
-| `home/event/<event_id>` | Un contract |`GET`||`GET`, `PUT`, `DELETE`|`GET`, `PUT`, `DELETE`|
-| `home/free-event/` | Une liste des évènements non affectés ||||`GET`|
-| `home/free-event/<event_id>` | Un évènement non affecté ||||`GET`, `PUT`, `DELETE`|
-| `home/account/` | Les informations de l'utilisateur connecté |`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|
+| `employee/` | Une liste de tous les employés affiliés ||||`GET`|
+| `employee/<employee_id>` | Un employé ||||`GET`, `PUT`, `DELETE`|
+| `customer/` | Une liste des clients affiliés ||`GET`|`GET`|`GET`|
+| `customer/<customer_id>` | Un client ||`GET`|`GET`|`GET`, `PUT`, `DELETE`|
+| `prospect/` | Une liste des prospects affiliés ||`GET`, `POST`||`GET`, `POST`|
+| `prospect/<prospect_id>` | Un prospect ||`GET`, `PUT`||`GET`, `PUT`, `DELETE`|
+| `free-prospect/` | Une liste des prospects non affectés ||||`GET`, `POST`|
+| `free-prospect/<prospect_id>` | Une prospect non affecté ||||`GET`, `PUT`, `DELETE`|
+| `provider/` | Une liste des fournisseurs ||`GET`|`GET`|`GET`, `POST`|
+| `provider/<provider_id>` | Un fournisseur ||`GET`|`GET`|`GET`, `PUT`, `DELETE`|
+| `contract/` | Une liste des contrats affiliés |`GET`|`GET`, `POST`|`GET`|`GET`, `POST`|
+| `contract/<contract_id>` | Un contrat |`GET`, `PUT`|`GET`, `PUT`, `DELETE`|`GET`|`GET`, `PUT`, `DELETE`|
+| `event/` | Une liste des évènements affiliés |`GET`|`GET`|`GET`|`GET`|
+| `event/<event_id>` | Un contract |`GET`|`GET`|`GET`, `PUT`, `DELETE`|`GET`, `PUT`, `DELETE`|
+| `free-event/` | Une liste des évènements non affectés ||||`GET`|
+| `free-event/<event_id>` | Un évènement non affecté ||||`GET`, `PUT`, `DELETE`|
+| `account/` | Les informations de l'utilisateur connecté |`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|
 ||||
 ||||
+
+> Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/home/`. &nbsp;
+
+&nbsp;
 
 ## Fonctionnement des affiliations
 ---

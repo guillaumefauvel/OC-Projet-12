@@ -12,13 +12,13 @@ class CustomerSerializer(ModelSerializer):
         model = Customer
         fields = ['id', 
                   'company_name',
+                  'email',
+                  'username',
                   'first_name',
                   'last_name',
                   'phone_number',
-                  'creation_date',
-                  'modified_date',
-                  'last_contact', 
                   'sales_contact']
+
         read_only_fields = ['sales_contact']
 
 
@@ -32,6 +32,7 @@ class EmployeeSerializer(ModelSerializer):
         model = User
         fields = ['id', 
                   'username',
+                  'email',
                   'status',
                   'first_name',
                   'last_name',
@@ -55,8 +56,8 @@ class EmployeeSerializer(ModelSerializer):
 
     def get_prospects(self, instance):
         
-        contracts = Prospect.objects.filter(sales_contact=instance.id)
-        serializer = ProspectSerializerSynthetic(contracts, many=True)
+        prospects = Prospect.objects.filter(sales_contact=instance.id)
+        serializer = ProspectSerializerSynthetic(prospects, many=True)
         return serializer.data
 
 
@@ -64,17 +65,8 @@ class SalesProspectSerializer(ModelSerializer):
 
     class Meta:
         model = Prospect
-        fields = ['id', 
-                  'company_name',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'phone_number',
-                  'sales_contact',
-                  'creation_date',
-                  'modified_date',
-                  'last_contact', 
-                  'converted']
+        fields = '__all__'
+
         read_only_fields = ['sales_contact']
         
         
@@ -82,17 +74,7 @@ class ManagementProspectSerializer(ModelSerializer):
 
     class Meta:
         model = Prospect
-        fields = ['id', 
-                  'company_name',
-                  'first_name',
-                  'last_name',
-                  'email',
-                  'phone_number',
-                  'sales_contact',
-                  'creation_date',
-                  'modified_date',
-                  'last_contact', 
-                  'converted']
+        fields = '__all__'
 
 
 class ProviderSerializer(ModelSerializer):
@@ -112,20 +94,7 @@ class EmployeeContractSerializer(ModelSerializer):
     
     class Meta:
         model = Contract
-        fields = [
-            'id', 
-            'title',
-            'customer_id',
-            'sales_contact',
-            'price',
-            'payed',
-            'amount_payed',
-            'contract_infos',
-            'employee_signature',
-            'customer_signature',
-            'signed',
-            'creation_date',
-            'modified_date']
+        fields = '__all__'
         
         read_only_fields = ['signed', 'customer_signature', 'customer_id', 'sales_contact']
 
@@ -134,21 +103,8 @@ class EmployeeCreationContractSerializer(ModelSerializer):
     
     class Meta:
         model = Contract
-        fields = [
-            'id', 
-            'title',
-            'customer_id',
-            'sales_contact',
-            'price',
-            'payed',
-            'amount_payed',
-            'contract_infos',
-            'employee_signature',
-            'customer_signature',
-            'signed',
-            'creation_date',
-            'modified_date']
-        
+        fields = '__all__'
+
         read_only_fields = ['customer_signature', 'signed']
 
 
@@ -156,40 +112,17 @@ class CustomerContractSerializer(ModelSerializer):
     
     class Meta:
         model = Contract
-        fields = [
-            'id', 
-            'title',
-            'customer_id',
-            'price',
-            'payed',
-            'amount_payed',
-            'contract_infos',
-            'employee_signature',
-            'customer_signature',
-            'signed',
-            'creation_date',
-            'modified_date']
+        fields = '__all__'
         
         read_only_fields = ['signed', 'employee_signature', 'price', 'payed',
                             'amount_payed', 'customer_id', 'title']
+
 
 class EventSerializer(ModelSerializer):
     
     class Meta:
         model = Event
-        fields = [
-            'id', 
-            'name',
-            'description',
-            'program',
-            'contract_id',
-            'support_id',
-            'customer_id',
-            'due_date',
-            'creation_date',
-            'modified_date',
-            'providers'
-            ]
+        fields = '__all__'
         
     
 class EventSerializerSynthetic(ModelSerializer):

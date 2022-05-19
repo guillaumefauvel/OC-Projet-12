@@ -226,9 +226,7 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     sales_half_signed_employee_pov = appserializers.ContractHalfSignedEmployeePOV
     sales_half_signed_customer_pov = appserializers.ContractHalfSignedCustomerPOV
     sales_signed_contract_serializer_class = appserializers.EmployeeSignedContractSerializer
-    
-    filterset_fields = ['sales_contact']
-    
+        
     def get_queryset(self):
         
         user_connected = self.request.user.id
