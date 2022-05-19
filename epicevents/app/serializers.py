@@ -252,3 +252,22 @@ class EmployeeSignedContractSerializer(ModelSerializer):
                             'signed', 'creation_date', 'modified_date']
         
 
+class ContractHalfSignedCustomerPOV(ModelSerializer):
+    
+    class Meta:
+        model = Contract
+        fields = '__all__'
+    
+        read_only_fields = ['title', 'customer_id', 'sales_contact', 'price', 
+                            'payed', 'amount_payed', 'contract_infos', 'employee_signature',
+                            'signed', 'creation_date', 'modified_date']
+
+class ContractHalfSignedEmployeePOV(ModelSerializer):
+    
+    class Meta:
+        model = Contract
+        fields = '__all__'
+    
+        read_only_fields = ['title', 'customer_id', 'sales_contact', 'price', 
+                            'contract_infos', 'customer_signature',
+                            'signed', 'creation_date', 'modified_date']

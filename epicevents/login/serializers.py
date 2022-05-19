@@ -15,7 +15,13 @@ from .models import User, Employee, Customer
 
 class EmployeeCreateSerializer(ModelSerializer):
 
-    status = ChoiceField(choices=User.USER_TYPE)
+    EMPLOYEE_TYPE = [
+        ('SALES','SALES'),
+        ('SUPPORT','SUPPORT'),
+        ('MANAGER','MANAGER'),
+    ]
+
+    status = ChoiceField(choices=EMPLOYEE_TYPE)
 
     class Meta:
         model = Employee

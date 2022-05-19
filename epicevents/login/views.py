@@ -1,7 +1,6 @@
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponseRedirect
-
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,18 +8,20 @@ from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
 
-from .serializers import EmployeeCreateSerializer, EmployeeAccountSerializer, CustomerAccountSerializer, PasswordUpdateSerializer
+from . import serializers as logserializer
 from login.models import User, Customer, Employee
-from . import exceptions
+from . import exceptions, permissions
 
 
+@permission_classes([permissions.IsManager])
 class EmployeeCreateAPIView(CreateAPIView):
     """ Allow the registration of a new user """
 
-    serializer_class = EmployeeCreateSerializer
+    serializer_class = logserializer.EmployeeCreateSerializer
     queryset = Employee.objects.all()
 
 
+@permission_classes([IsAuthenticated])
 class LogoutView(APIView):
     """ Disconnect the user from his account """
     def get(self, request):
@@ -32,7 +33,7 @@ class LogoutView(APIView):
 @permission_classes([IsAuthenticated])
 class PasswordUpdate(UpdateAPIView):
     
-    serializer_class = PasswordUpdateSerializer
+    serializer_class = logserializer.PasswordUpdateSerializer
 
     def get_queryset(self):
         user_obj = User.objects.get(id=self.request.user.id)
@@ -77,7 +78,6 @@ class CustomLoginView(LoginView):
         return response
     
 
-
 class MultipleSerializerMixin:
     """
     Mixin that allow the use of a detailled serializer class
@@ -96,8 +96,8 @@ class MultipleSerializerMixin:
 @permission_classes([IsAuthenticated])
 class AccountInfoView(MultipleSerializerMixin, ModelViewSet):
     
-    serializer_class = CustomerAccountSerializer
-    employee_serializer_class = EmployeeAccountSerializer
+    serializer_class = logserializer.CustomerAccountSerializer
+    employee_serializer_class = logserializer.EmployeeAccountSerializer
 
     def get_queryset(self):
         user_obj = User.objects.get(id=self.request.user.id)

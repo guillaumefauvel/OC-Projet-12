@@ -17,6 +17,18 @@ class IsSuperUser(permissions.BasePermission):
         return request.user.is_superuser
 
 
+class IsManager(permissions.BasePermission):
+    """ Give the permission to CRUD any object if he is a Manager """
+
+    def has_permission(self, request, view):
+
+        return request.user.status == 'MANAGER'
+
+    def has_object_permission(self, request, view, obj):
+
+        return request.user.status == 'MANAGER'
+
+
 class CustomerListPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):

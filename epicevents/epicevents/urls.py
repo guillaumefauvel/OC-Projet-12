@@ -13,49 +13,33 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from posixpath import basename
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from app.views import (
-    EmployeeViewSet,
-    CustomerViewSet,
-    ProspectViewSet,
-    FreeProspectViewSet,
-    ProviderViewSet,
-    ContractViewSet,
-    EventViewSet,
-    NotAssignedEventViewSet,
-    )
-
-from login.views import (
-    EmployeeCreateAPIView,
-    CustomLoginView,
-    SucessLogin,
-    LogoutView,
-    AccountInfoView,
-    PasswordUpdate)
+import login.views as logviews
+import app.views as appviews
 
 router = routers.SimpleRouter()
-router.register('employee', EmployeeViewSet, basename='employee')
-router.register('customer', CustomerViewSet, basename='customer')
-router.register('prospect', ProspectViewSet, basename='prospect')
-router.register('free-prospect', FreeProspectViewSet, basename='free-prospect')
-router.register('provider', ProviderViewSet, basename='provider')
-router.register('contract', ContractViewSet, basename='contract')
-router.register('event', EventViewSet, basename='event')
-router.register('free-event', NotAssignedEventViewSet, basename='free-event')
-router.register('account', AccountInfoView, basename='account')
+router.register('employee', appviews.EmployeeViewSet, basename='employee')
+router.register('customer', appviews.CustomerViewSet, basename='customer')
+router.register('prospect', appviews.ProspectViewSet, basename='prospect')
+router.register('free-prospect', appviews.FreeProspectViewSet, basename='free-prospect')
+router.register('provider', appviews.ProviderViewSet, basename='provider')
+router.register('contract', appviews.ContractViewSet, basename='contract')
+router.register('event', appviews.EventViewSet, basename='event')
+router.register('free-event', appviews.NotAssignedEventViewSet, basename='free-event')
+router.register('account', logviews.AccountInfoView, basename='account')
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', include(router.urls)),
 
-    path('signup/', EmployeeCreateAPIView.as_view(), name='signup'),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('login/success', SucessLogin.as_view(), name='success-login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
-    path('password-update/', PasswordUpdate.as_view(), name='password-update')
+    path('home/create-employee', logviews.EmployeeCreateAPIView.as_view(), name='signup'),
+    path('login/', logviews.CustomLoginView.as_view(), name='login'),
+    path('login/success', logviews.SucessLogin.as_view(), name='success-login'),
+    path('logout/', logviews.LogoutView.as_view(), name='logout'),
+    path('password-update/', logviews.PasswordUpdate.as_view(), name='password-update')
 ]

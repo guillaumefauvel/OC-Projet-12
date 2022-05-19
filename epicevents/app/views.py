@@ -1,21 +1,10 @@
-from ast import arg
-from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
+
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
-from .serializers import (CustomerSerializer,
-                          EmployeeSerializer,
-                          SalesProspectSerializer,
-                          ManagementProspectSerializer,
-                          EmployeeCreationContractSerializer,
-                          ProviderSerializer,
-                          EmployeeContractSerializer,
-                          CustomerContractSerializer,
-                          EmployeeSignedContractSerializer,
-                          EventSerializer)
 from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm
-
+from . import serializers as appserializers
 
 class SalesManagementSerializerAdapter:
 
@@ -31,27 +20,40 @@ class SalesManagementSerializerAdapter:
 
 class ContractSerializerAdapter:
     """
-    Adapt the serializer used for the contract management based on the type of user and based on the action type.
+    Adapt the serializer used for the contract management based on the type of user, the action type, and the contract number of signature.
     
-    - For the user, return the default serializer
-    - For the Employee, return the 'sales_serializer_class' if he is on the retrieve view
-    - For the Employee, return the 'sales_list_serializer_class' if he is on the list view
-    - For the Employee, return the 'sales_signed_contract_serializer_class' if the contract is signed - It will limit his update
-    
+    In list mode :
+        - For the user, return the default serializer
+        - For the employee, return 'sales_list_serializer_class'
+
+    In detailed mode : 
+        For the employee : 
+            - If there is no signature yet return the 'sales_serializer_class'
+            - If there is one of the two signature return the 'sales_half_signed_employee_pov'
+        For the customer
+            - If there is no signature yet return the default serializer class
+            - If there is one of the two signature return the 'sales_half_signed_customer_pov'
+        If the contract is signed (two signature) return the 'sales_signed_contract_serializer_class'
+        
     """
 
     sales_serializer_class = None
     sales_list_serializer_class = None
+    sales_half_signed_employee_pov = None
+    sales_half_signed_customer_pov = None
     sales_signed_contract_serializer_class = None
     
     def get_serializer_class(self):
-        
-        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
-        if len(id_refs) > 0:
-            contract_obj = Contract.objects.get(id=id_refs[0])
-        
+
+        if 'pk' in self.kwargs:
+            contract_obj = Contract.objects.get(id=self.kwargs['pk'])
+
             if self.request.user.status != 'CUSTOMER' and self.sales_signed_contract_serializer_class is not None and contract_obj.signed == True:
                 return self.sales_signed_contract_serializer_class
+            if self.request.user.status == 'CUSTOMER' and self.sales_half_signed_customer_pov is not None and (contract_obj.customer_signature or contract_obj.employee_signature)  == True:
+                return self.sales_half_signed_customer_pov
+            if self.request.user.status != 'CUSTOMER' and self.sales_half_signed_employee_pov is not None and (contract_obj.customer_signature or contract_obj.employee_signature) == True:
+                return self.sales_half_signed_employee_pov
             
         if self.request.user.status != 'CUSTOMER' and self.sales_list_serializer_class is not None and self.action == 'create':
             return self.sales_list_serializer_class
@@ -64,7 +66,7 @@ class ContractSerializerAdapter:
 class EmployeeViewSet(ModelViewSet):
     """ Return the Employees objects attached to the manager """
     
-    serializer_class = EmployeeSerializer
+    serializer_class = appserializers.EmployeeSerializer
     http_method_names = ['get', 'head', 'put', 'delete']
 
     def get_queryset(self):
@@ -90,7 +92,7 @@ class CustomerViewSet(ModelViewSet):
     
     """
 
-    serializer_class = CustomerSerializer
+    serializer_class = appserializers.CustomerSerializer
     http_method_names = ['get', 'head', 'put', 'delete']
 
     def get_queryset(self):
@@ -117,8 +119,8 @@ class CustomerViewSet(ModelViewSet):
 class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
     """ Return Prospect objects associated to the Sales-Employee or the Manager-Employee """
     
-    serializer_class = SalesProspectSerializer
-    management_serializer_class = ManagementProspectSerializer
+    serializer_class = appserializers.SalesProspectSerializer
+    management_serializer_class = appserializers.ManagementProspectSerializer
     
     def get_queryset(self, *args, **kwargs):
 
@@ -138,9 +140,8 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
         return []
     
     def get_object(self):
-
-        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
-        prospect_obj = Prospect.objects.get(id=id_refs[0])
+       
+        prospect_obj = Prospect.objects.get(id=self.kwargs['pk'])
 
         if self.request.method == 'PUT':
             data_dict = self.request.data
@@ -176,7 +177,7 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
 @permission_classes([ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
     
-    serializer_class = ManagementProspectSerializer
+    serializer_class = appserializers.ManagementProspectSerializer
     
     def get_queryset(self):
         
@@ -194,7 +195,7 @@ class FreeProspectViewSet(ModelViewSet):
 class ProviderViewSet(ModelViewSet):
     """ Return Provider objects if the user is an Employee """
     
-    serializer_class = ProviderSerializer
+    serializer_class = appserializers.ProviderSerializer
 
     def get_queryset(self):
 
@@ -215,16 +216,19 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     - For the SALES : Contracts that have him as direct a referee with the FK='sales_contact'.
     - For the CUSTOMER : Contracts that the CUSTOMER his linked with.
     - For the SUPPORT : Contracts that are linked to the Events the SUPPORT user managed.
-    - For the MANAGER : Contracts associated with the Employees he managed (Only SALES employees for the moment #TODO).
+    - For the MANAGER : Contracts associated with the Employees he managed.
 
     """
     
-    serializer_class = CustomerContractSerializer
-    sales_serializer_class = EmployeeContractSerializer
-    sales_list_serializer_class = EmployeeCreationContractSerializer
-    sales_signed_contract_serializer_class = EmployeeSignedContractSerializer
+    serializer_class = appserializers.CustomerContractSerializer
+    sales_serializer_class = appserializers.EmployeeContractSerializer
+    sales_list_serializer_class = appserializers.EmployeeCreationContractSerializer
+    sales_half_signed_employee_pov = appserializers.ContractHalfSignedEmployeePOV
+    sales_half_signed_customer_pov = appserializers.ContractHalfSignedCustomerPOV
+    sales_signed_contract_serializer_class = appserializers.EmployeeSignedContractSerializer
     
     filterset_fields = ['sales_contact']
+    
     def get_queryset(self):
         
         user_connected = self.request.user.id
@@ -245,8 +249,7 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
 
     def get_object(self):
         
-        id_refs = [v for v in str(self.request).split('/') if v.isnumeric()]
-        contract_obj = Contract.objects.get(id=id_refs[0])
+        contract_obj = Contract.objects.get(id=self.kwargs['pk'])
         signed = False
         
         if self.request.method == 'PUT':
@@ -277,11 +280,11 @@ class EventViewSet(ModelViewSet):
     - For the SALES : Events linked to the contracts he is referred to.
     - For the CUSTOMER : Events that the CUSTOMER his linked with.
     - For the SUPPORT : Events referring to him, FK='support_id'
-    - For the MANAGER : Events associated with the Employees he managed (Only Support employees for the moment #TODO).
+    - For the MANAGER : Events associated with the Employees he managed.
 
     """
     
-    serializer_class = EventSerializer
+    serializer_class = appserializers.EventSerializer
 
     def get_queryset(self):
 
@@ -306,7 +309,7 @@ class EventViewSet(ModelViewSet):
 class NotAssignedEventViewSet(ModelViewSet):
     """ Return to the Managers the event that has be assign to a support Employee """
     
-    serializer_class = EventSerializer
+    serializer_class = appserializers.EventSerializer
     http_method_names = ['get', 'head', 'put', 'delete']
 
     def get_queryset(self):
