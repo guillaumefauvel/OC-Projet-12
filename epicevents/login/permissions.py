@@ -29,15 +29,30 @@ class IsManager(permissions.BasePermission):
         return request.user.status == 'MANAGER'
 
 
+class EmployeePerm(permissions.BasePermission):
+    
+    def has_permission(self, request, view):
+        
+        if request.user.status == 'MANAGER':
+            return True
+
+    def has_object_permission(self, request, view, obj):
+        
+        if request.user.id == obj.manager.id:
+            
+            return True
+
+
 class CustomerListPerm(permissions.BasePermission):
     
     def has_permission(self, request, view):
         
-        return True
+        if request.user.status in ['MANAGER', 'SALES', 'SUPPORT']:
+            return True
 
     def has_object_permission(self, request, view, obj):
                
-        if view.action == 'destroy':
+        if view.action in ['update', 'partial_update', 'destroy']:
             return request.user.status == 'MANAGER'
         return True
 
@@ -50,12 +65,11 @@ class ProspectPerm(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
 
-        if view.action == 'retrieve':
-            return True
-        elif view.action in ['update', 'partial_update']:        
-            return True
-        elif view.action == 'destroy':
-            return request.user.status == 'MANAGER'
+        if request.user.id in [obj.sales_contact.manager.id, obj.sales_contact.id]:
+            if view.action in ['retrieve', 'update', 'partial_update']:
+                return True
+            elif view.action == 'destroy':
+                return request.user.status == 'MANAGER'
 
 
 class ProviderPerm(permissions.BasePermission):
@@ -85,21 +99,26 @@ class ContractPerm(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-                
-        if view.action == 'retrieve':
-            return True
         
-        elif view.action in ['update', 'partial_update']:
-            if not obj.signed:
-                if request.user.status in ['CUSTOMER', 'SALES', 'MANAGER']:
-                    return True 
-            else:
-                if request.user.status == 'MANAGER':
-                    return True
+        associated_user = [
+            obj.customer_id.id,
+            obj.sales_contact.id,
+            obj.sales_contact.manager.id,
+            Event.objects.get(contract_id=obj.id).support_id.id,
+        ]
 
-        elif view.action == 'destroy':
-
-            return request.user.status == 'MANAGER'
+        if request.user.id in associated_user:
+            if view.action == 'retrieve':
+                return True
+            elif view.action in ['update', 'partial_update']:
+                if not obj.signed:
+                    if request.user.status in ['CUSTOMER', 'SALES', 'MANAGER']:
+                        return True 
+                else:
+                    if request.user.status == 'MANAGER':
+                        return True
+            elif view.action == 'destroy':
+                return request.user.status == 'MANAGER'
         
 
 class EventPerm(permissions.BasePermission):
@@ -111,15 +130,23 @@ class EventPerm(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-            
-        if view.action == 'retrieve':
-            return True
         
-        if view.action in ['update', 'partial_update']:
-            return request.user.status in ['MANAGER', 'SUPPORT']
-    
-        if view.action == 'destroy':
-            return request.user.status == 'MANAGER'
+        associated_user = [
+            obj.customer_id.id,
+            obj.support_id.id,
+            obj.support_id.manager.id,
+            Contract.objects.get(id=obj.contract_id.id).sales_contact.id,
+        ]
+                
+        if request.user.id in associated_user:
+            if view.action == 'retrieve':
+                return True
+            
+            if view.action in ['update', 'partial_update']:
+                return request.user.status in ['MANAGER', 'SUPPORT']
+        
+            if view.action == 'destroy':
+                return request.user.status == 'MANAGER'
 
 
 class FreeEventPerm(permissions.BasePermission):
@@ -134,5 +161,23 @@ class FreeEventPerm(permissions.BasePermission):
             return False
 
     def has_object_permission(self, request, view, obj):
-            
+        
+        if request.user.status == 'MANAGER':
+            return True
+        
+
+class AccountPerm(permissions.BasePermission):
+    
+    
+    def has_permission(self, request, view):
+        
+        if view.action != 'create':
+            return True
+        
+    def has_object_permission(self, request, view, obj):
+        
+        if view.action == 'destroy':
+            return False
         return True
+
+

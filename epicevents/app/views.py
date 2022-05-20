@@ -3,7 +3,7 @@ from rest_framework.decorators import permission_classes
 
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
-from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm
+from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm, EmployeePerm
 from . import serializers as appserializers
 from . import filters
 
@@ -64,6 +64,7 @@ class ContractSerializerAdapter:
         return super().get_serializer_class()
 
 
+@permission_classes([EmployeePerm])
 class EmployeeViewSet(ModelViewSet):
     """ Return the Employees objects attached to the manager """
     

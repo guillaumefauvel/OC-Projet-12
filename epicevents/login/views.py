@@ -93,7 +93,7 @@ class MultipleSerializerMixin:
         return super().get_serializer_class()
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, permissions.AccountPerm])
 class AccountInfoView(MultipleSerializerMixin, ModelViewSet):
     
     serializer_class = logserializer.CustomerAccountSerializer
@@ -102,6 +102,6 @@ class AccountInfoView(MultipleSerializerMixin, ModelViewSet):
     def get_queryset(self):
         user_obj = User.objects.get(id=self.request.user.id)
         if user_obj.status == 'CUSTOMER':
-            return [Customer.objects.get(id=self.request.user.id)]
-        return [User.objects.get(id=self.request.user.id)]
+            return Customer.objects.filter(id=self.request.user.id)
+        return User.objects.filter(id=self.request.user.id)
             
