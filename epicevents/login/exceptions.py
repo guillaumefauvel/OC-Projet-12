@@ -11,3 +11,15 @@ class BadPassword(APIException):
     status_code = 401
     default_detail = 'Incorrect password'
     default_code = '4026'
+    
+
+class InvalidToken(APIException):
+    status_code = 401
+    default_detail = 'The token you furnished is not valid'
+    default_code = '4026'
+    
+
+class MissingToken(APIException):
+    status_code = 401
+    default_detail = 'Please, provide a token'
+    default_code = '4026'

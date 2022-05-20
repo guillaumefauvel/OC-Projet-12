@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework.authtoken import views
 
 import login.views as logviews
 import app.views as appviews
@@ -40,6 +41,8 @@ urlpatterns = [
     path('home/create-employee', logviews.EmployeeCreateAPIView.as_view(), name='signup'),
     path('login/', logviews.CustomLoginView.as_view(), name='login'),
     path('login/success', logviews.SucessLogin.as_view(), name='success-login'),
+    path('obtain-token/', views.obtain_auth_token),
+
     path('logout/', logviews.LogoutView.as_view(), name='logout'),
     path('password-update/', logviews.PasswordUpdate.as_view(), name='password-update')
 ]

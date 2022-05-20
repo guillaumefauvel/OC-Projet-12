@@ -1,9 +1,34 @@
+import re
+
 from django.core.exceptions import ObjectDoesNotExist
+from login.exceptions import InvalidToken, MissingToken
 from rest_framework import permissions
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
 
 from login.models import User, Employee, Customer
 from app.models import Prospect, Provider, Contract, Event
 
+
+class ValidToken(permissions.BasePermission):
+    """ Check if the token specified is associated with the connected user """
+
+    def has_permission(self, request, view):
+
+        return True
+
+        regex = re.compile('^HTTP_')
+        header_infos = dict((regex.sub('', header), value) for (header, value)
+                            in request.META.items() if header.startswith('HTTP_'))
+
+        if 'AUTHORIZATION' in header_infos:
+            token = header_infos['AUTHORIZATION'].split()[1]
+            if Token.objects.get(user=request.user) == Token.objects.get(key=token):
+                return True
+            raise InvalidToken
+        else: 
+            raise MissingToken
+        
 
 class IsSuperUser(permissions.BasePermission):
     """ Give the permission to CRUD any object if he is a SuperUser"""

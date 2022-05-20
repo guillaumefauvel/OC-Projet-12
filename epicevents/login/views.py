@@ -13,7 +13,7 @@ from login.models import User, Customer, Employee
 from . import exceptions, permissions
 
 
-@permission_classes([permissions.IsManager])
+@permission_classes([permissions.IsManager, permissions.ValidToken])
 class EmployeeCreateAPIView(CreateAPIView):
     """ Allow the registration of a new user """
 
@@ -30,7 +30,7 @@ class LogoutView(APIView):
         return Response({'Disconnected': 'You\'ve successfully logged out'})
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, permissions.ValidToken])
 class PasswordUpdate(UpdateAPIView):
     
     serializer_class = logserializer.PasswordUpdateSerializer
@@ -93,7 +93,7 @@ class MultipleSerializerMixin:
         return super().get_serializer_class()
 
 
-@permission_classes([IsAuthenticated, permissions.AccountPerm])
+@permission_classes([IsAuthenticated, permissions.AccountPerm, permissions.ValidToken])
 class AccountInfoView(MultipleSerializerMixin, ModelViewSet):
     
     serializer_class = logserializer.CustomerAccountSerializer
