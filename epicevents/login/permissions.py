@@ -5,6 +5,7 @@ from login.exceptions import InvalidToken, MissingToken
 from rest_framework import permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
 
 from login.models import User, Employee, Customer
 from app.models import Prospect, Provider, Contract, Event
@@ -129,10 +130,15 @@ class ContractPerm(permissions.BasePermission):
             obj.customer_id.id,
             obj.sales_contact.id,
             obj.sales_contact.manager.id,
-            Event.objects.get(contract_id=obj.id).support_id.id,
         ]
 
+        try:
+            associated_user.append(Event.objects.get(contract_id=obj.id).support_id.id)
+        except ObjectDoesNotExist:
+            pass
+        
         if request.user.id in associated_user:
+
             if view.action == 'retrieve':
                 return True
             elif view.action in ['update', 'partial_update']:

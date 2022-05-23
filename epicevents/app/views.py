@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
@@ -64,7 +65,7 @@ class ContractSerializerAdapter:
         return super().get_serializer_class()
 
 
-@permission_classes([EmployeePerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, EmployeePerm])
 class EmployeeViewSet(ModelViewSet):
     """ Return the Employees objects attached to the manager """
     
@@ -84,7 +85,7 @@ class EmployeeViewSet(ModelViewSet):
         return []
 
 
-@permission_classes([CustomerListPerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, CustomerListPerm])
 class CustomerViewSet(ModelViewSet):
     """ 
     Return the Customers objects linked to their mission : 
@@ -119,7 +120,7 @@ class CustomerViewSet(ModelViewSet):
         return []
 
 
-@permission_classes([ProspectPerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
 class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
     """ Return Prospect objects associated to the Sales-Employee or the Manager-Employee """
     
@@ -179,7 +180,7 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
     
         return prospect_obj
     
-@permission_classes([ProspectPerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
     
     serializer_class = appserializers.ManagementProspectSerializer
@@ -197,7 +198,7 @@ class FreeProspectViewSet(ModelViewSet):
             return free_prospect
 
 
-@permission_classes([ProviderPerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, ProviderPerm])
 class ProviderViewSet(ModelViewSet):
     """ Return Provider objects if the user is an Employee """
     
@@ -215,7 +216,7 @@ class ProviderViewSet(ModelViewSet):
         return []
 
 
-@permission_classes([ContractPerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, ContractPerm])
 class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     """ 
     Return the Contracts objects linked to their users : 
@@ -237,22 +238,25 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     filterset_class = filters.ContractFilter
     
     def get_queryset(self):
+        from itertools import chain
         
         user_connected = self.request.user.id
         user_status = User.objects.get(id=user_connected).status
         
         if user_status == 'SALES':
-            contracts_obj = Contract.objects.filter(sales_contact=user_connected)
+            contract_qs = Contract.objects.filter(sales_contact=user_connected)
         if user_status == 'CUSTOMER':
-            contracts_obj = Contract.objects.filter(customer_id=user_connected)
+            contract_qs = Contract.objects.filter(customer_id=user_connected)
         if user_status == 'SUPPORT':
             event_managed = Event.objects.filter(support_id=user_connected)
-            contracts_obj = [event.contract_id for event in event_managed ]
+            contract_qs = [event.contract_id for event in event_managed ]
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
-            contracts_obj = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees][0]
-        
-        return contracts_obj
+            contracts_queryset = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]
+            result = list(chain(*contracts_queryset))
+            results_ids = [contract.id for contract in result]
+            contract_qs = Contract.objects.filter(id__in=results_ids)        
+        return contract_qs
 
     def get_object(self):
         
@@ -279,7 +283,7 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
         return contract_obj
 
 
-@permission_classes([EventPerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, EventPerm])
 class EventViewSet(ModelViewSet):
     """ 
     Return the Event objects linked to their users : 
@@ -314,7 +318,7 @@ class EventViewSet(ModelViewSet):
         return selected_events
 
 
-@permission_classes([FreeEventPerm, ValidToken])
+@permission_classes([IsAuthenticated, ValidToken, FreeEventPerm])
 class NotAssignedEventViewSet(ModelViewSet):
     """ Return to the Managers the event that has be assign to a support Employee """
     
