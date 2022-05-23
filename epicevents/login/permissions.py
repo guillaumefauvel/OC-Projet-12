@@ -136,6 +136,8 @@ class ContractPerm(permissions.BasePermission):
             associated_user.append(Event.objects.get(contract_id=obj.id).support_id.id)
         except ObjectDoesNotExist:
             pass
+        except AttributeError:
+            pass
         
         if request.user.id in associated_user:
 

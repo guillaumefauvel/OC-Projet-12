@@ -12,7 +12,7 @@ class Prospect(models.Model):
     phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
-    sales_contact = models.ForeignKey(Employee, on_delete=models.PROTECT, blank=True, null=True, related_name='prospect_sales')
+    sales_contact = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True, related_name='prospect_sales')
     last_contact = models.DateField(blank=True, null=True)
     converted = models.BooleanField(default=False)
 

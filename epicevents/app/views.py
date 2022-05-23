@@ -1,7 +1,9 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
+from login.exceptions import ObjectDeleted
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
 from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm, EmployeePerm, ValidToken
@@ -146,39 +148,33 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
         return []
     
     def get_object(self):
-       
-        prospect_obj = Prospect.objects.get(id=self.kwargs['pk'])
 
-        if self.request.method == 'PUT':
-            data_dict = self.request.data
+        prospect_obj = get_object_or_404(Prospect, pk=self.kwargs['pk'])
+        data_dict = self.request.data
 
-            if 'converted' in list(self.request.data):
-                print('yes')
+        if self.request.method == 'PUT' and 'converted' in data_dict:
+            if data_dict['converted'] == 'true':
+                
+                new_user = Customer.objects.create(company_name=data_dict['company_name'],
+                                                    username=str(data_dict['first_name'])+str(data_dict['last_name']),
+                                                    first_name=data_dict['first_name'],
+                                                    last_name=data_dict['first_name'],
+                                                    email=data_dict['email'],
+                                                    phone_number=data_dict['phone_number'],
+                                                    sales_contact=Employee.objects.get(id=data_dict['sales_contact']),
+                                                    status='CUSTOMER')
+                if len(data_dict['last_contact']) != 0:
+                    new_user.last_contact = data_dict['last_contact']
+                new_user.set_password('password-oc')
+                new_user.save()
+
+                prospect_obj.delete()
+                raise ObjectDeleted
             
-            try:
-                if data_dict['converted'] == 'true':
-                    
-                    new_user = Customer.objects.create(company_name=data_dict['company_name'],
-                                                        username=str(data_dict['first_name'])+str(data_dict['last_name']),
-                                                        first_name=data_dict['first_name'],
-                                                        last_name=data_dict['first_name'],
-                                                        email=data_dict['email'],
-                                                        phone_number=data_dict['phone_number'],
-                                                        sales_contact=Employee.objects.get(id=data_dict['sales_contact']),
-                                                        status='CUSTOMER')
-                    if len(data_dict['last_contact']) != 0:
-                        new_user.last_contact = data_dict['last_contact']
-                    new_user.set_password('password-oc')
-                    new_user.save()        
-                    
-                    prospect_object = Prospect.objects.get(email=data_dict['email'])        
-                    prospect_object.delete()
-                    
-                    return 
-            except KeyError:
-                pass
-    
         return prospect_obj
+    
+
+    
     
 @permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
