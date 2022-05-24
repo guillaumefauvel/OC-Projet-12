@@ -1,6 +1,8 @@
+from calendar import c
+from dataclasses import field
 from datetime import date
 
-from rest_framework.serializers import ModelSerializer, ChoiceField, SerializerMethodField
+from rest_framework.serializers import ModelSerializer, ChoiceField, SerializerMethodField, StringRelatedField, CharField
 
 from .models import Prospect, Provider, Contract, Event
 from login.models import User, Customer, Employee
@@ -124,7 +126,7 @@ class EventSerializer(ModelSerializer):
         model = Event
         fields = '__all__'
         
-    
+        
 class EventSerializerSynthetic(ModelSerializer):
     
     class Meta:
@@ -204,3 +206,4 @@ class ContractHalfSignedEmployeePOV(ModelSerializer):
         read_only_fields = ['title', 'customer_id', 'sales_contact', 'price', 
                             'contract_infos', 'customer_signature',
                             'signed', 'creation_date', 'modified_date']
+        

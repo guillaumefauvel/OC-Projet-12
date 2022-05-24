@@ -4,7 +4,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from login.exceptions import InvalidToken, MissingToken
 from rest_framework import permissions
 from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 
 from login.models import User, Employee, Customer
@@ -56,10 +55,16 @@ class IsManager(permissions.BasePermission):
 
 
 class EmployeePerm(permissions.BasePermission):
+    """
+    List : Give the access to the Manager only, but restrict his create ability.
+    Object : Give the access if the Manager is associated to the Employee.
+    """
     
     def has_permission(self, request, view):
         
         if request.user.status == 'MANAGER':
+            if view.action == 'create':
+                return False
             return True
 
     def has_object_permission(self, request, view, obj):
@@ -70,6 +75,10 @@ class EmployeePerm(permissions.BasePermission):
 
 
 class CustomerListPerm(permissions.BasePermission):
+    """
+    List : Give the permissions if the user is a member of the staff.
+    Object : If he the user is a manager, add the Update and Delete method.
+    """    
     
     def has_permission(self, request, view):
         
@@ -84,6 +93,10 @@ class CustomerListPerm(permissions.BasePermission):
 
 
 class ProspectPerm(permissions.BasePermission):
+    """
+    List : Give the permission to the Managers and Sales
+    Object : Give permission to access the object if the user is attached to it. Add the Delete method if he his the manager.
+    """
     
     def has_permission(self, request, view):
         
@@ -92,23 +105,26 @@ class ProspectPerm(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
 
         if request.user.id in [obj.sales_contact.manager.id, obj.sales_contact.id]:
-            if view.action in ['retrieve', 'update', 'partial_update']:
-                return True
-            elif view.action == 'destroy':
+            if view.action == 'destroy':
                 return request.user.status == 'MANAGER'
+            return True
 
 
 class ProviderPerm(permissions.BasePermission):
+    """
+    List : Give access if the user is an employee. Add the Create method if he is a manager.
+    Object : Give the retrieve access if the user is an employee. If the user is a Manager, give him the CRUD method.
+    """
     
     def has_permission(self, request, view):
         
         if view.action == 'create':
             return request.user.status == 'MANAGER'
-        
+
         return request.user.status in ['MANAGER', 'SALES', 'SUPPORT']
 
     def has_object_permission(self, request, view, obj):
-               
+        
         if view.action == 'retrieve':
             return request.user.status in ['MANAGER', 'SALES', 'SUPPORT']
         else:
@@ -116,6 +132,14 @@ class ProviderPerm(permissions.BasePermission):
 
 
 class ContractPerm(permissions.BasePermission):
+    """
+    List : Give the access to create if the user is a Sales or a Manager. Return True for the other conditions.
+    Object : 
+     - Give the retrieve access if the user is associated to the contract. 
+     - If the contract is not yet signed (by both parties) give the update access to the Customer, the Sales and the Manager
+     - If the contract is signed give the update access to the Sales and the Manager
+     - Give the Delete access to the Manager only
+    """
     
     def has_permission(self, request, view):
 
@@ -148,13 +172,20 @@ class ContractPerm(permissions.BasePermission):
                     if request.user.status in ['CUSTOMER', 'SALES', 'MANAGER']:
                         return True 
                 else:
-                    if request.user.status == 'MANAGER':
+                    if request.user.status == ['MANAGER', 'SALES']:
                         return True
             elif view.action == 'destroy':
                 return request.user.status == 'MANAGER'
         
 
 class EventPerm(permissions.BasePermission):
+    """
+    List : Doesn't allow the Create access.
+    Object : 
+    - Give access to the associated user only.
+    - Give the Update access to the Manager and the Support employee.
+    - Give the Delete access to the Manager only.
+    """
     
     def has_permission(self, request, view):
         
@@ -183,7 +214,10 @@ class EventPerm(permissions.BasePermission):
 
 
 class FreeEventPerm(permissions.BasePermission):
-    
+    """
+    List : Give access to the Manager only, but forbidden his Create ability.
+    Object : Give access to the Manager only.
+    """
     def has_permission(self, request, view):
         
         if request.user.status == 'MANAGER':
@@ -200,8 +234,11 @@ class FreeEventPerm(permissions.BasePermission):
         
 
 class AccountPerm(permissions.BasePermission):
-    
-    
+    """
+    List : Give access to every user but forbidden their Create ability
+    Object : Allow every action except the Delete action.
+    """
+
     def has_permission(self, request, view):
         
         if view.action != 'create':

@@ -14,15 +14,15 @@ class User(AbstractUser):
     ('CUSTOMER','CUSTOMER'),
     ]
 
-    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    phone_number = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True, null=True, blank=True)
     modified_date = models.DateField(auto_now=True, null=True, blank=True)
 
-    username = models.CharField(max_length=32, unique=True, null=True, blank=True)
-    email = models.CharField(max_length=64, unique=True, null=True, blank=True)
-    first_name = models.CharField(max_length=32, null=True, blank=True)
-    last_name = models.CharField(max_length=32, null=True, blank=True)
-    password = models.CharField(max_length=128, null=True)
+    username = models.CharField(max_length=32, unique=True)
+    email = models.CharField(max_length=64, unique=True)
+    first_name = models.CharField(max_length=32)
+    last_name = models.CharField(max_length=32)
+    password = models.CharField(max_length=128)
 
     status = models.CharField(max_length=10, default=USER_TYPE)
 

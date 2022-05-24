@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from itertools import chain
 
 from login.exceptions import ObjectDeleted
 from login.models import User, Employee, Customer
@@ -154,7 +155,6 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
 
         if self.request.method == 'PUT' and 'converted' in data_dict:
             if data_dict['converted'] == 'true':
-                
                 new_user = Customer.objects.create(company_name=data_dict['company_name'],
                                                     username=str(data_dict['first_name'])+str(data_dict['last_name']),
                                                     first_name=data_dict['first_name'],
@@ -234,7 +234,6 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
     filterset_class = filters.ContractFilter
     
     def get_queryset(self):
-        from itertools import chain
         
         user_connected = self.request.user.id
         user_status = User.objects.get(id=user_connected).status
@@ -249,9 +248,10 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
             contracts_queryset = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]
-            result = list(chain(*contracts_queryset))
-            results_ids = [contract.id for contract in result]
-            contract_qs = Contract.objects.filter(id__in=results_ids)        
+            chain_contracts = list(chain(*contracts_queryset))
+            contracts_ids = [contract.id for contract in chain_contracts]
+            contract_qs = Contract.objects.filter(id__in=contracts_ids)  
+                  
         return contract_qs
 
     def get_object(self):
@@ -309,8 +309,11 @@ class EventViewSet(ModelViewSet):
             selected_events = Event.objects.filter(support_id=user_connected)
         if user_status == 'MANAGER':
             managed_employees = [Employee.objects.filter(manager=user_connected)][0]
-            selected_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees][0]
-            
+            selected_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees]
+            chained_events = list(chain(*selected_events))
+            events_ids = [contract.id for contract in chained_events]
+            selected_events = Event.objects.filter(id__in=events_ids) 
+             
         return selected_events
 
 
