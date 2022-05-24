@@ -1,4 +1,6 @@
-# EpicEvents - API CRM réservé à la gestion client et à l'organisation d'évènement. 
+# EpicEvents CRM - Projet 12 / OC
+
+API sécurisé réservé à la gestion client et à l'organisation d'évènement. 
 
 &nbsp;
 
@@ -11,15 +13,24 @@
 
 &nbsp;
 
+## Diagramme Entité-Relation : 
+
+---
+
+![image info](./images/erd.png)
+
+&nbsp;
+
+
 ## Logique métier derrière la création d'un Customer ou d'un Event :
 
 ---
 
 &nbsp;
 
-![image info](./customer_creation.png)
+![image info](./images/customer_creation.png)
 
-![image info](./event_creation.png)
+![image info](./images/event_creation.png)
 
 
 &nbsp;

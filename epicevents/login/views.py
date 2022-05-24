@@ -24,6 +24,7 @@ class EmployeeCreateAPIView(CreateAPIView):
 @permission_classes([IsAuthenticated])
 class LogoutView(APIView):
     """ Disconnect the user from his account """
+    
     def get(self, request):
         logout(request)
 
@@ -32,7 +33,7 @@ class LogoutView(APIView):
 
 @permission_classes([IsAuthenticated, permissions.ValidToken])
 class PasswordUpdate(UpdateAPIView):
-    
+    """     Update the password of the authenticated user     """
     serializer_class = logserializer.PasswordUpdateSerializer
 
     def get_queryset(self):
@@ -53,6 +54,12 @@ class SucessLogin(APIView):
         return Response({'Success': 'You\'ve successfully logged in'})
 
 
+class LoginFailed(APIView):
+    """ Informs the user that his login attempt failed """
+    def get(self, request):
+        return Response({'Error': 'You\'re login credentials are invalid'})
+
+
 class CustomLoginView(LoginView):
     """ Log a new user by checking his credentials """
 
@@ -64,11 +71,11 @@ class CustomLoginView(LoginView):
         password = request.POST['password']
 
         user = User.objects.filter(username=username).first()
-        
+
         if user is None:
-            raise exceptions.UserNotFound
+            return HttpResponseRedirect('/login/error')
         if not user.check_password(password):
-            raise exceptions.BadPassword
+            return HttpResponseRedirect('/login/error')
             
         user = authenticate(username=username, password=password)
         login(request, user)
@@ -79,9 +86,7 @@ class CustomLoginView(LoginView):
     
 
 class MultipleSerializerMixin:
-    """
-    Mixin that allow the use of a detailled serializer class
-    """
+    """ Mixin that allow the use of a detailled serializer class """
 
     employee_serializer_class = None
 
@@ -95,6 +100,7 @@ class MultipleSerializerMixin:
 
 @permission_classes([IsAuthenticated, permissions.AccountPerm, permissions.ValidToken])
 class AccountInfoView(MultipleSerializerMixin, ModelViewSet):
+    """ Return the infos of the authenticated user. """
     
     serializer_class = logserializer.CustomerAccountSerializer
     employee_serializer_class = logserializer.EmployeeAccountSerializer

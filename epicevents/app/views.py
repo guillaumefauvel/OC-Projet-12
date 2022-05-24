@@ -12,6 +12,7 @@ from . import serializers as appserializers
 from . import filters
 
 class SalesManagementSerializerAdapter:
+    """ Adapt the serializer to the status of the employee """
 
     management_serializer_class = None
 
@@ -178,6 +179,7 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
     
 @permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
+    """    Return the prospect that has not been assigned for the moment.    """
     
     serializer_class = appserializers.ManagementProspectSerializer
     filterset_class = filters.ProspectFilter

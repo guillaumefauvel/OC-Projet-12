@@ -25,6 +25,8 @@ urlpatterns = [
     path('home/create-employee', logviews.EmployeeCreateAPIView.as_view(), name='signup'),
     path('login/', logviews.CustomLoginView.as_view(), name='login'),
     path('login/success', logviews.SucessLogin.as_view(), name='success-login'),
+    path('login/error', logviews.LoginFailed.as_view(), name='error-login'),
+
     path('obtain-token/', views.obtain_auth_token),
 
     path('logout/', logviews.LogoutView.as_view(), name='logout'),
