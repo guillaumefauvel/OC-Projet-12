@@ -17,7 +17,7 @@ API sécurisé réservé à la gestion client et à l'organisation d'évènement
 
 ---
 
-![image info](./images/erd.png)
+![image info](./images/erd_github_adapted.png)
 
 &nbsp;
 
