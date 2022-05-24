@@ -172,7 +172,7 @@ class ContractPerm(permissions.BasePermission):
                     if request.user.status in ['CUSTOMER', 'SALES', 'MANAGER']:
                         return True 
                 else:
-                    if request.user.status == ['MANAGER', 'SALES']:
+                    if request.user.status in ['MANAGER', 'SALES']:
                         return True
             elif view.action == 'destroy':
                 return request.user.status == 'MANAGER'
