@@ -1,12 +1,13 @@
 # EpicEvents - API CRM réservé à la gestion client et à l'organisation d'évènement. 
 
+&nbsp;
+
 # Lancement du projet
 
 1. Tout d'abord, cloner le repository sur votre machine.  
 2. Mettez en place un environnement virtuel (Avec notamment `virtual env`)
 3. Installer les dépendances avec un `pip install -r requirements.txt`
 4. Lancer le serveur avec un `python manage.py runserver`
-5. (CONNECTION)
 
 &nbsp;
 
@@ -23,9 +24,28 @@
 
 &nbsp;
 
-## Gestion de projet :
+#  <ins>Gestion de projet :
 
----
+&nbsp;
+
+###  <ins>Authentification et gestion du compte :
+
+&nbsp;
+
+| Requête | Fonctions | Opérations CRUD |
+| ----------- | ----------- | ----------- | 
+| `login/` | Connexion | `POST` |
+| `logout/` | Déconnexion | `GET` |
+| `obtain-token/` | Renvois le token | `POST` |
+| `create-employee/` | Création d'un employé (Manager uniquement) | `POST` |
+| `password-update/` | Mise à jour du mot de passe | `PUT` |
+| `home/account/` | Mise à jour des informations du compte | `GET`, `PUT` |
+||||
+||||
+
+&nbsp;
+
+###  <ins>CRM : 
 
 &nbsp;
 
@@ -55,9 +75,9 @@
 
 &nbsp;
 
-## Fonctionnement des affiliations
----
+##  <ins>Fonctionnement des affiliations
 
+---
 
 &nbsp;
 
