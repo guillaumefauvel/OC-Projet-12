@@ -62,6 +62,8 @@ API sécurisé réservé à la gestion client et à l'organisation d'évènement
 
 | Requête | Réponse | Customer | Sales | Support | Manager |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| `free-employee/` | Une liste de tous les employés non affiliés ||||`GET`|
+| `free-employee/<employee_id>` | Un employé non affiliés ||||`GET`, `PUT`, `DELETE`|
 | `employee/` | Une liste de tous les employés affiliés ||||`GET`|
 | `employee/<employee_id>` | Un employé ||||`GET`, `PUT`, `DELETE`|
 | `customer/` | Une liste des clients affiliés ||`GET`|`GET`|`GET`|
@@ -119,7 +121,7 @@ API sécurisé réservé à la gestion client et à l'organisation d'évènement
 | `contract/` | title__icontains(STR) | customer_id(INT) | sales_contact(INT) | payed(BOOL) | signed(BOOL)  | price__lte(INT) | price__lte(INT)
 | `prospect/` | company_name__icontains(STR) | sales_contact(INT) | last_contact__gte(DATE*) | last_contact__lte(DATE*) |||
 | `customer/` | username__icontains(STR) | sales_contact(INT) | | ||||
-| `contract/` | username__icontains(STR) | status(STR) | | ||||
+| `employee/` | username__icontains(STR) | status(STR) | | ||||
 | `event/` | name__icontains(STR) | customer_id(INT) | due_date__gte(DATE*) | due_date__lte(DATE) ||||
 | `provider/` | type(STR)| | | ||||
 |||||||

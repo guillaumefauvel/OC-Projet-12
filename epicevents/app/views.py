@@ -4,13 +4,14 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
-from rest_framework import status
+from django.db.models import Q
 
 from login.exceptions import ObjectDeleted
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
-from login.permissions import ProspectPerm, ProviderPerm, ContractPerm, EventPerm, CustomerListPerm, FreeEventPerm, EmployeePerm, ValidToken
+from login.permissions import (ProspectPerm, ProviderPerm, ContractPerm,
+                               EventPerm, CustomerListPerm, FreeEventPerm,
+                               EmployeePerm, ValidToken, NotAssignedEmployeePerm)
 from . import serializers as appserializers
 from . import filters
 
@@ -88,13 +89,12 @@ class EmployeeViewSet(ModelViewSet):
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
             return managed_employees
-
         return []
 
 
 @permission_classes([IsAuthenticated, ValidToken, CustomerListPerm])
 class CustomerViewSet(ModelViewSet):
-    """ 
+    """
     Return the Customers objects linked to their mission : 
 
     - For the MANAGER : Customers attached to the Employee he manage.
@@ -114,18 +114,17 @@ class CustomerViewSet(ModelViewSet):
 
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
-            customers = [Customer.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees][0]
-            return customers
+            customers_qs = [Customer.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees][0]
+            return customers_qs
         if user_status == 'SUPPORT':
             events = Event.objects.filter(support_id=user_connected)
-            customers = [event.customer_id for event in events]
-            return set(customers)
+            customers_ids = set([event.customer_id.id for event in events])
+            customers_qs = Customer.objects.filter(id__in=customers_ids)
+            return customers_qs
         if user_status == 'SALES':
-            customers = Customer.objects.filter(sales_contact=user_connected)
-            return customers
-            
-        return []
-
+            customers_qs = Customer.objects.filter(sales_contact=user_connected)
+            return customers_qs
+    
 
 @permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
 class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
@@ -146,12 +145,12 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
         if user_status == 'MANAGER':
             managed_employee = Employee.objects.filter(manager=user_connected)
             prospects_attached = [Prospect.objects.filter(sales_contact=employee) for employee in managed_employee]
-            if len(prospects_attached) > 0:
-                prospects_attached = prospects_attached[0]
-            return prospects_attached
-                
+            chain_prospects = list(chain(*prospects_attached))
+            prospect_ids = [prospect.id for prospect in chain_prospects]
+            prospect_qs = Prospect.objects.filter(id__in=prospect_ids)  
+            return prospect_qs
         return []
-    
+
     def get_object(self):
 
         prospect_obj = get_object_or_404(Prospect, pk=self.kwargs['pk'])
@@ -171,10 +170,10 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
                     new_user.last_contact = data_dict['last_contact']
                 new_user.set_password('password-oc')
                 new_user.save()
-
-                prospect_obj.delete()
                 
-                raise ObjectDeleted             
+                prospect_obj.delete()
+
+                raise ObjectDeleted      
             
         return prospect_obj
        
@@ -248,8 +247,8 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
             contract_qs = Contract.objects.filter(customer_id=user_connected)
         if user_status == 'SUPPORT':
             event_managed = Event.objects.filter(support_id=user_connected)
-            contract_qs = [event.contract_id for event in event_managed ]
-            # TODO - 
+            event_ids = [event.contract_id.id for event in event_managed ]
+            contract_qs = Contract.objects.filter(id__in=event_ids)
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
             contracts_queryset = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]
@@ -318,7 +317,7 @@ class EventViewSet(ModelViewSet):
             chained_events = list(chain(*selected_events))
             events_ids = [contract.id for contract in chained_events]
             selected_events = Event.objects.filter(id__in=events_ids) 
-             
+            
         return selected_events
 
 
@@ -342,4 +341,16 @@ class NotAssignedEventViewSet(ModelViewSet):
 
         return []
     
+
+@permission_classes([IsAuthenticated, ValidToken, NotAssignedEmployeePerm])
+class NotAssignedEmployeeViewSet(ModelViewSet):
+    """ Return employees that do not have a manager, excluding the manager """
+    serializer_class = appserializers.EmployeeSerializer
+    http_method_names = ['get', 'head', 'put', 'delete']
+
+    def get_queryset(self):
+        
+        employee_qs = Employee.objects.filter(manager=None).filter(~Q(status='MANAGER'))
+        
+        return employee_qs
 

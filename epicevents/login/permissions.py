@@ -186,7 +186,7 @@ class EventPerm(permissions.BasePermission):
     - Give the Update access to the Manager and the Support employee.
     - Give the Delete access to the Manager only.
     """
-    
+
     def has_permission(self, request, view):
         
         if view.action == 'create':
@@ -194,21 +194,23 @@ class EventPerm(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-        
+
         associated_user = [
             obj.customer_id.id,
             obj.support_id.id,
-            obj.support_id.manager.id,
             Contract.objects.get(id=obj.contract_id.id).sales_contact.id,
         ]
-                
+        emp_manager = Employee.objects.get(id=obj.support_id.id).manager
+        if emp_manager != None:
+            associated_user.append(emp_manager.id)
+
         if request.user.id in associated_user:
             if view.action == 'retrieve':
                 return True
-            
+
             if view.action in ['update', 'partial_update']:
                 return request.user.status in ['MANAGER', 'SUPPORT']
-        
+
             if view.action == 'destroy':
                 return request.user.status == 'MANAGER'
 
@@ -251,3 +253,13 @@ class AccountPerm(permissions.BasePermission):
         return True
 
 
+class NotAssignedEmployeePerm(permissions.BasePermission):
+    """ Give permission to every MANAGER """
+
+    def has_permission(self, request, view):
+        if request.user.status == 'MANAGER': 
+            return True
+    
+    def has_object_permission(self, request, view, obj):
+        if request.user.status == 'MANAGER': 
+            return True

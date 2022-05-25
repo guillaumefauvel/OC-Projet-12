@@ -33,6 +33,7 @@ class EmployeeCreateSerializer(ModelSerializer):
             'password',
             'email',
             'status',
+            'manager',
         ]
         extra_kwargs = {
             'password':{'write_only': True}

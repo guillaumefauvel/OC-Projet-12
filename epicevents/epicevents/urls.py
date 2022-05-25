@@ -7,6 +7,7 @@ import login.views as logviews
 import app.views as appviews
 
 router = routers.SimpleRouter()
+router.register('free-employee', appviews.NotAssignedEmployeeViewSet, basename='free-employee')
 router.register('employee', appviews.EmployeeViewSet, basename='employee')
 router.register('customer', appviews.CustomerViewSet, basename='customer')
 router.register('prospect', appviews.ProspectViewSet, basename='prospect')

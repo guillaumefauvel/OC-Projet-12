@@ -31,9 +31,10 @@ class EmployeeSerializer(ModelSerializer):
     prospects = SerializerMethodField()
 
     class Meta:
-        model = User
+        model = Employee
         fields = ['id', 
                   'username',
+                  'manager',
                   'email',
                   'status',
                   'first_name',
@@ -42,7 +43,6 @@ class EmployeeSerializer(ModelSerializer):
                   'events',
                   'contracts', 
                   'prospects']
-
 
     def get_events(self, instance):
 
@@ -207,3 +207,4 @@ class ContractHalfSignedEmployeePOV(ModelSerializer):
                             'contract_infos', 'customer_signature',
                             'signed', 'creation_date', 'modified_date']
         
+    

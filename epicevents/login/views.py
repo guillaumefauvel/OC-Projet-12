@@ -47,6 +47,7 @@ class PasswordUpdate(UpdateAPIView):
 
         return user_obj
 
+
 @permission_classes([IsAuthenticated])
 class SucessLogin(APIView):
     """ Informs the user that he successfully logged in """
