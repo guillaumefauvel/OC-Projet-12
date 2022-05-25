@@ -44,6 +44,19 @@ class IsManager(permissions.BasePermission):
         return request.user.status == 'MANAGER'
 
 
+class EmployeeCreationPerm(permissions.BasePermission):
+    """ Give the permission to CRUD any object if he is a Manager """
+
+    def has_permission(self, request, view):
+
+        return request.user.status == 'MANAGER'
+
+    def has_object_permission(self, request, view, obj):
+
+        return request.user.status == 'MANAGER'    
+    
+
+
 class EmployeePerm(permissions.BasePermission):
     """
     List : Give the access to the Manager only, but restrict his create ability.
@@ -194,12 +207,15 @@ class EventPerm(permissions.BasePermission):
 
         associated_user = [
             obj.customer_id.id,
-            obj.support_id.id,
             Contract.objects.get(id=obj.contract_id.id).sales_contact.id,
         ]
-        emp_manager = Employee.objects.get(id=obj.support_id.id).manager
-        if emp_manager != None:
-            associated_user.append(emp_manager.id)
+        emp_support = obj.support_id
+        
+        if emp_support != None:
+            associated_user.append(emp_support.id)
+            emp_manager = Employee.objects.get(id=obj.support_id.id).manager
+            if emp_manager != None:
+                associated_user.append(emp_manager.id)
 
         if request.user.id in associated_user:
             if view.action == 'retrieve':

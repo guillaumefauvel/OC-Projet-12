@@ -63,6 +63,8 @@ class Contract(models.Model):
     def __str__(self) -> str:
         return self.title
 
+    class Meta:
+        ordering = ['-modified_date']
 
 class Event(models.Model):
 
@@ -83,3 +85,6 @@ class Event(models.Model):
 
     def __str__(self) -> str:
         return self.name
+    
+    class Meta:
+        ordering = ['-modified_date']

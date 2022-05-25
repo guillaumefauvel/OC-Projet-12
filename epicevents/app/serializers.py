@@ -22,6 +22,26 @@ class CustomerSerializer(ModelSerializer):
         read_only_fields = ['sales_contact']
 
 
+class CustomerSynthetic(ModelSerializer):
+    
+    class Meta:
+        model = Customer
+        fields = ['id', 
+                  'company_name',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'phone_number']
+
+
+
+class EmployeeSyntheticSerializer(ModelSerializer):
+    
+    class Meta:
+        model = Employee
+        fields = ['first_name', 'last_name', 'email', 'phone_number']
+
+
 class EmployeeSerializer(ModelSerializer):
       
     events = SerializerMethodField()
@@ -126,13 +146,38 @@ class ManagementProspectCreationSerializer(ModelSerializer):
 # ---------------------
 
 
-class EventSerializer(ModelSerializer):
+class EventCustomerPOV(ModelSerializer):
     
+    support_id = SerializerMethodField()
+
     class Meta:
         model = Event
         fields = '__all__'
+    
+    def get_support_id(self, instance):
         
-        
+        if instance.support_id:
+            referee = Employee.objects.get(id=instance.support_id.id)
+            serializer = EmployeeSyntheticSerializer(referee)
+            return serializer.data
+        return None
+
+
+class EventEmployeePOV(ModelSerializer):
+    
+    customer_id = SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = '__all__'
+    
+    def get_customer_id(self, instance):
+
+        customer = Customer.objects.get(id=instance.customer_id.id)
+        serializer = CustomerSynthetic(customer)
+        return serializer.data
+
+
 class EventSerializerSynthetic(ModelSerializer):
     
     class Meta:
@@ -144,7 +189,8 @@ class EventSerializerSynthetic(ModelSerializer):
             'customer_id',
             'due_date',
             ]
-        
+
+
 # ---------------------
 # CONTRACTS SERIALIZERS
 # ---------------------
@@ -161,7 +207,7 @@ class ContractSerializerSynthetic(ModelSerializer):
             'employee_signature',
             'customer_signature',
             'signed']
-
+    
 
 class EmployeeSignedContractSerializer(ModelSerializer):
     
@@ -189,6 +235,8 @@ class EmployeeSignedContractSerializer(ModelSerializer):
         
 class ContractHalfSignedCustomerPOV(ModelSerializer):
     
+    sales_contact = SerializerMethodField()
+    
     class Meta:
         model = Contract
         fields = '__all__'
@@ -197,7 +245,13 @@ class ContractHalfSignedCustomerPOV(ModelSerializer):
                             'payed', 'amount_payed', 'contract_infos', 'employee_signature',
                             'signed', 'creation_date', 'modified_date']
 
-
+    def get_sales_contact(self, instance):
+        
+        referee = Employee.objects.get(id=instance.sales_contact.id)
+        serializer = EmployeeSyntheticSerializer(referee)
+        return serializer.data
+    
+    
 class ContractHalfSignedEmployeePOV(ModelSerializer):
     
     class Meta:
@@ -211,13 +265,20 @@ class ContractHalfSignedEmployeePOV(ModelSerializer):
 
 class CustomerContractSerializer(ModelSerializer):
     
+    sales_contact = SerializerMethodField()
+
     class Meta:
         model = Contract
         fields = '__all__'
         
         read_only_fields = ['signed', 'employee_signature', 'price', 'payed',
-                            'amount_payed', 'customer_id', 'title']
+                            'amount_payed', 'customer_id', 'title', 'sales_contact']
 
+    def get_sales_contact(self, instance):
+        
+        referee = Employee.objects.get(id=instance.sales_contact.id)
+        serializer = EmployeeSyntheticSerializer(referee)
+        return serializer.data
     
 class EmployeeContractSerializer(ModelSerializer):
     

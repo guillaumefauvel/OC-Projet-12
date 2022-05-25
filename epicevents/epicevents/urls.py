@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', include(router.urls)),
 
-    path('home/create-employee', logviews.EmployeeCreateAPIView.as_view(), name='signup'),
+    path('home/create-employee/', logviews.EmployeeCreateAPIView.as_view(), name='signup'),
     path('login/', logviews.CustomLoginView.as_view(), name='login'),
     path('login/success', logviews.SucessLogin.as_view(), name='success-login'),
     path('login/error', logviews.LoginFailed.as_view(), name='error-login'),

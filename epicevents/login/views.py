@@ -13,7 +13,7 @@ from login.models import User, Customer, Employee
 from . import exceptions, permissions
 
 
-@permission_classes([permissions.IsManager, permissions.ValidToken])
+@permission_classes([permissions.EmployeeCreationPerm, permissions.ValidToken])
 class EmployeeCreateAPIView(CreateAPIView):
     """ Allow the registration of a new user """
 

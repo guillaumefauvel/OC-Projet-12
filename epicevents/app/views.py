@@ -35,6 +35,19 @@ class SalesManagementSerializerAdapter:
         return self.management_detail_serializer_class
 
 
+class EventSerializerAdapter:
+    """ Adapt the serializer based on the status of the user """
+
+    event_customer_serializer = None
+    event_employee_serializer = None
+
+    def get_serializer_class(self):
+        
+        if self.request.user.status == 'CUSTOMER' and self.event_customer_serializer is not None:
+            return self.event_customer_serializer
+        return self.event_employee_serializer
+    
+
 class ContractSerializerAdapter:
     """
     Adapt the serializer used for the contract management based on the type of user, the action type, and the number of signature in the contract.
@@ -295,7 +308,7 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
 
 
 @permission_classes([IsAuthenticated, ValidToken, EventPerm])
-class EventViewSet(ModelViewSet):
+class EventViewSet(EventSerializerAdapter, ModelViewSet):
     """ 
     Return the Event objects linked to their users : 
     
@@ -305,8 +318,10 @@ class EventViewSet(ModelViewSet):
     - For the MANAGER : Events associated with the Employees he managed.
 
     """
+
+    event_customer_serializer = appserializers.EventCustomerPOV
+    event_employee_serializer = appserializers.EventEmployeePOV
     
-    serializer_class = appserializers.EventSerializer
     filterset_class = filters.EventFilter
 
     def get_queryset(self):
@@ -333,10 +348,10 @@ class EventViewSet(ModelViewSet):
 
 
 @permission_classes([IsAuthenticated, ValidToken, IsManager])
-class NotAssignedEventViewSet(ModelViewSet):
+class NotAssignedEventViewSet(EventSerializerAdapter, ModelViewSet):
     """ Return to the Managers the event that has be assign to a support Employee """
     
-    serializer_class = appserializers.EventSerializer
+    event_employee_serializer = appserializers.EventEmployeePOV
     filterset_class = filters.EventFilter
 
     def get_queryset(self):
