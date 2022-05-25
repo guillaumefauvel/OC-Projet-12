@@ -26,6 +26,6 @@ class MissingToken(APIException):
     
     
 class ObjectDeleted(APIException):
-    status_code = 404
+    status_code = 410
     default_detail = 'The object has been deleted'
     default_code = '4027'

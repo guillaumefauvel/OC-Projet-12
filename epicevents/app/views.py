@@ -1,8 +1,11 @@
+from itertools import chain
+
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from itertools import chain
+from rest_framework.response import Response
+from rest_framework import status
 
 from login.exceptions import ObjectDeleted
 from login.models import User, Employee, Customer
@@ -170,12 +173,11 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
                 new_user.save()
 
                 prospect_obj.delete()
-                raise ObjectDeleted
+                
+                raise ObjectDeleted             
             
         return prospect_obj
-    
-
-    
+       
     
 @permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
@@ -247,6 +249,7 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
         if user_status == 'SUPPORT':
             event_managed = Event.objects.filter(support_id=user_connected)
             contract_qs = [event.contract_id for event in event_managed ]
+            # TODO - 
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
             contracts_queryset = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]

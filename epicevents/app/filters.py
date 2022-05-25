@@ -61,6 +61,5 @@ class EmployeeFilter(filters.FilterSet):
         fields = {
             'username': ['icontains'],
             'status': ['exact'],
-            'manager': ['exact']
         }
         

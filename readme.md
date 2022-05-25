@@ -104,4 +104,33 @@ API sécurisé réservé à la gestion client et à l'organisation d'évènement
 
 > Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/home/`. &nbsp;
 
-> `Employee.manager` à la première ligne signifie : Tout les objects `Employee` ayant pour FK l'id du Manager à l'attribut `.manager`. La logique est la même pour les autres lignes abbrégées de la même manière.
+> `Employee.manager` à la première ligne signifie : Tout les objects `Employee` ayant pour FK l'id du Manager à l'attribut `.manager`. La logique est la même pour les autres lignes abbrégées de la même manière.*
+
+&nbsp;
+
+
+##  <ins>Utilisation des filtres
+
+---
+
+
+| Requête | Filtre1 | Filtre2 | Filtre3 | Filtre4 | Filtre5 | Filtre6 | Filtre7 |
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | 
+| `contract/` | title__icontains(STR) | customer_id(INT) | sales_contact(INT) | payed(BOOL) | signed(BOOL)  | price__lte(INT) | price__lte(INT)
+| `prospect/` | company_name__icontains(STR) | sales_contact(INT) | last_contact__gte(DATE*) | last_contact__lte(DATE*) |||
+| `customer/` | username__icontains(STR) | sales_contact(INT) | | ||||
+| `contract/` | username__icontains(STR) | status(STR) | | ||||
+| `event/` | name__icontains(STR) | customer_id(INT) | due_date__gte(DATE*) | due_date__lte(DATE) ||||
+| `provider/` | type(STR)| | | ||||
+|||||||
+
+*DATE\* format = '2022-05-19'*
+
+### <ins>Exemple de requête filtrante : 
+"Tout les contrats impayés et signés ayant pour client l'utilisateur numéro 7 et un prix situé entre 5000 et 20000 euros."
+
+ - Requête : `home/contract/?customer_id=7&price__gte=5000&price__lte=20000&payed=false&signed=true`
+
+
+
+
