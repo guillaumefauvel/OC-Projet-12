@@ -15,17 +15,24 @@ from login.permissions import (ProspectPerm, ProviderPerm, ContractPerm,
 from . import serializers as appserializers
 from . import filters
 
+
 class SalesManagementSerializerAdapter:
-    """ Adapt the serializer to the status of the employee """
+    """ Adapt the serializer based on the status of the employee """
 
-    management_serializer_class = None
-
+    sales_prospect_creation_serializer_class = None
+    management_prospect_creation_serializer_class = None
+    management_detail_serializer_class = None
+    sales_detail_serializer_class = None
+    
     def get_serializer_class(self):
-
-        if User.objects.get(id=self.request.user.id).status != 'SALES' and self.management_serializer_class is not None:
-            return self.management_serializer_class
-
-        return super().get_serializer_class()
+        
+        if 'create' in self.action:
+            if self.request.user.status == 'SALES':
+                return self.sales_prospect_creation_serializer_class
+            return self.management_prospect_creation_serializer_class
+        if self.request.user.status == 'SALES':
+            return self.sales_detail_serializer_class
+        return self.management_detail_serializer_class
 
 
 class ContractSerializerAdapter:
@@ -130,8 +137,12 @@ class CustomerViewSet(ModelViewSet):
 class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
     """ Return Prospect objects associated to the Sales-Employee or the Manager-Employee """
     
-    serializer_class = appserializers.SalesProspectSerializer
-    management_serializer_class = appserializers.ManagementProspectSerializer
+    
+    sales_detail_serializer_class = appserializers.SalesProspectSerializer
+    management_detail_serializer_class = appserializers.ManagementProspectSerializer
+    sales_prospect_creation_serializer_class = appserializers.SalesProspectCreationSerializer
+    management_prospect_creation_serializer_class = appserializers.ManagementProspectCreationSerializer
+    
     filterset_class = filters.ProspectFilter
 
     def get_queryset(self, *args, **kwargs):
@@ -176,11 +187,16 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
                 raise ObjectDeleted      
             
         return prospect_obj
-       
+    
+    def perform_create(self, serializer):
+        
+        if self.request.user.status == 'SALES':
+            serializer.save(sales_contact=Employee.objects.get(id=self.request.user.id))
+        
     
 @permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
 class FreeProspectViewSet(ModelViewSet):
-    """    Return the prospect that has not been assigned for the moment.    """
+    """ Return the prospect that has not been assigned for the moment. """
     
     serializer_class = appserializers.ManagementProspectSerializer
     filterset_class = filters.ProspectFilter

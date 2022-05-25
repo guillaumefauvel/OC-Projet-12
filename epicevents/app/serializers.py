@@ -70,13 +70,31 @@ class SalesProspectSerializer(ModelSerializer):
         fields = '__all__'
 
         read_only_fields = ['sales_contact']
+
+
+class SalesProspectCreationSerializer(ModelSerializer):
+
+    class Meta:
+        model = Prospect
+        fields = '__all__'
+
+        read_only_fields = ['sales_contact', 'converted']
         
-        
+
 class ManagementProspectSerializer(ModelSerializer):
 
     class Meta:
         model = Prospect
         fields = '__all__'
+
+
+class ManagementProspectCreationSerializer(ModelSerializer):
+
+    class Meta:
+        model = Prospect
+        fields = '__all__'
+        
+    read_only_fields = [ 'converted']
 
 
 class ProviderSerializer(ModelSerializer):
