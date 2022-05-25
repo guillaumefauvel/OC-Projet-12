@@ -10,8 +10,8 @@ from login.exceptions import ObjectDeleted
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
 from login.permissions import (ProspectPerm, ProviderPerm, ContractPerm,
-                               EventPerm, CustomerListPerm, FreeEventPerm,
-                               EmployeePerm, ValidToken, NotAssignedEmployeePerm)
+                               EventPerm, CustomerPerm,
+                               EmployeePerm, ValidToken, IsManager)
 from . import serializers as appserializers
 from . import filters
 
@@ -91,15 +91,13 @@ class EmployeeViewSet(ModelViewSet):
     def get_queryset(self):
 
         user_connected = self.request.user.id
-        user_status = User.objects.get(id=user_connected).status
 
-        if user_status == 'MANAGER':
-            managed_employees = Employee.objects.filter(manager=user_connected)
-            return managed_employees
-        return []
+        managed_employees = Employee.objects.filter(manager=user_connected)
+        
+        return managed_employees
 
 
-@permission_classes([IsAuthenticated, ValidToken, CustomerListPerm])
+@permission_classes([IsAuthenticated, ValidToken, CustomerPerm])
 class CustomerViewSet(ModelViewSet):
     """
     Return the Customers objects linked to their mission : 
@@ -121,16 +119,20 @@ class CustomerViewSet(ModelViewSet):
 
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
-            customers_qs = [Customer.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees][0]
-            return customers_qs
+            customers_objects = [Customer.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]
+            chain_customers = list(chain(*customers_objects))
+            customers_ids = [customer.id for customer in chain_customers]
+            customers_qs = Customer.objects.filter(id__in=customers_ids)
+            
         if user_status == 'SUPPORT':
             events = Event.objects.filter(support_id=user_connected)
             customers_ids = set([event.customer_id.id for event in events])
             customers_qs = Customer.objects.filter(id__in=customers_ids)
-            return customers_qs
+            
         if user_status == 'SALES':
             customers_qs = Customer.objects.filter(sales_contact=user_connected)
-            return customers_qs
+            
+        return customers_qs
     
 
 @permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
@@ -151,16 +153,17 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
         user_status = User.objects.get(id=user_connected).status
                 
         if user_status == 'SALES':
-            prospects_attached = Prospect.objects.filter(sales_contact=user_connected)
-            return prospects_attached
+            prospect_qs = Prospect.objects.filter(sales_contact=user_connected)
+
         if user_status == 'MANAGER':
             managed_employee = Employee.objects.filter(manager=user_connected)
             prospects_attached = [Prospect.objects.filter(sales_contact=employee) for employee in managed_employee]
             chain_prospects = list(chain(*prospects_attached))
             prospect_ids = [prospect.id for prospect in chain_prospects]
             prospect_qs = Prospect.objects.filter(id__in=prospect_ids)  
-            return prospect_qs
-        return []
+
+        return prospect_qs
+
 
     def get_object(self):
 
@@ -169,18 +172,7 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
 
         if self.request.method == 'PUT' and 'converted' in data_dict:
             if data_dict['converted'] == 'true':
-                new_user = Customer.objects.create(company_name=data_dict['company_name'],
-                                                    username=str(data_dict['first_name'])+str(data_dict['last_name']),
-                                                    first_name=data_dict['first_name'],
-                                                    last_name=data_dict['first_name'],
-                                                    email=data_dict['email'],
-                                                    phone_number=data_dict['phone_number'],
-                                                    sales_contact=Employee.objects.get(id=data_dict['sales_contact']),
-                                                    status='CUSTOMER')
-                if len(data_dict['last_contact']) != 0:
-                    new_user.last_contact = data_dict['last_contact']
-                new_user.set_password('password-oc')
-                new_user.save()
+                create_user_from_prospect(data_dict)
                 
                 prospect_obj.delete()
 
@@ -194,7 +186,7 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
             serializer.save(sales_contact=Employee.objects.get(id=self.request.user.id))
         
     
-@permission_classes([IsAuthenticated, ValidToken, ProspectPerm])
+@permission_classes([IsAuthenticated, ValidToken, IsManager])
 class FreeProspectViewSet(ModelViewSet):
     """ Return the prospect that has not been assigned for the moment. """
     
@@ -203,15 +195,24 @@ class FreeProspectViewSet(ModelViewSet):
 
     def get_queryset(self):
         
-        user_connected = self.request.user.id
-        user_status = User.objects.get(id=user_connected).status
+        free_prospect_qs = Prospect.objects.filter(sales_contact=None) 
         
-        if user_status == 'MANAGER':
-            
-            free_prospect = Prospect.objects.filter(sales_contact=None) 
-            
-            return free_prospect
+        return free_prospect_qs
+    
+    def get_object(self):
 
+        prospect_obj = get_object_or_404(Prospect, pk=self.kwargs['pk'])
+        data_dict = self.request.data
+
+        if self.request.method == 'PUT' and 'converted' in data_dict:
+            if data_dict['converted'] == 'true':
+                create_user_from_prospect(data_dict)
+                
+                prospect_obj.delete()
+
+                raise ObjectDeleted      
+            
+        return prospect_obj
 
 @permission_classes([IsAuthenticated, ValidToken, ProviderPerm])
 class ProviderViewSet(ModelViewSet):
@@ -219,16 +220,10 @@ class ProviderViewSet(ModelViewSet):
     
     serializer_class = appserializers.ProviderSerializer
     filterset_class = filters.ProviderFilter
-    
+
     def get_queryset(self):
 
-        user_connected = self.request.user.id
-        verify_employee = Employee.objects.filter(id=user_connected)
-        
-        if len(verify_employee) != 0:
-            return Provider.objects.all()
-        
-        return []
+        return Provider.objects.all()
 
 
 @permission_classes([IsAuthenticated, ValidToken, ContractPerm])
@@ -295,7 +290,7 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
                     new_event = Event.objects.create(name=contract_obj.title, 
                                         contract_id=Contract.objects.get(id=contract_obj.id),
                                         customer_id=contract_obj.customer_id)
-                    
+
         return contract_obj
 
 
@@ -314,7 +309,6 @@ class EventViewSet(ModelViewSet):
     serializer_class = appserializers.EventSerializer
     filterset_class = filters.EventFilter
 
-
     def get_queryset(self):
 
         user_connected = self.request.user.id
@@ -322,7 +316,8 @@ class EventViewSet(ModelViewSet):
 
         if user_status == 'SALES':
             attached_contracts = Contract.objects.filter(sales_contact=user_connected)
-            selected_events = [Event.objects.get(contract_id=contract_ref.id) for contract_ref in attached_contracts]
+            event_ids = [Event.objects.get(contract_id=contract_ref.id).id for contract_ref in attached_contracts]
+            selected_events = Event.objects.filter(id__in=event_ids)
         if user_status == 'CUSTOMER':
             selected_events = Event.objects.filter(customer_id=user_connected)
         if user_status == 'SUPPORT':
@@ -333,11 +328,11 @@ class EventViewSet(ModelViewSet):
             chained_events = list(chain(*selected_events))
             events_ids = [contract.id for contract in chained_events]
             selected_events = Event.objects.filter(id__in=events_ids) 
-            
+
         return selected_events
 
 
-@permission_classes([IsAuthenticated, ValidToken, FreeEventPerm])
+@permission_classes([IsAuthenticated, ValidToken, IsManager])
 class NotAssignedEventViewSet(ModelViewSet):
     """ Return to the Managers the event that has be assign to a support Employee """
     
@@ -346,23 +341,16 @@ class NotAssignedEventViewSet(ModelViewSet):
 
     def get_queryset(self):
 
-        user_connected = self.request.user.id
-        user_status = User.objects.get(id=user_connected).status
+        not_assign_events = Event.objects.filter(support_id=None)
         
-        if user_status == 'MANAGER':
-            
-            not_assign_events = Event.objects.filter(support_id=None)
-            
-            return not_assign_events
+        return not_assign_events
 
-        return []
-    
 
-@permission_classes([IsAuthenticated, ValidToken, NotAssignedEmployeePerm])
+@permission_classes([IsAuthenticated, ValidToken, IsManager])
 class NotAssignedEmployeeViewSet(ModelViewSet):
     """ Return employees that do not have a manager, excluding the manager """
+    
     serializer_class = appserializers.EmployeeSerializer
-    http_method_names = ['get', 'head', 'put', 'delete']
 
     def get_queryset(self):
         
@@ -370,3 +358,18 @@ class NotAssignedEmployeeViewSet(ModelViewSet):
         
         return employee_qs
 
+
+def create_user_from_prospect(data_dict):
+    
+    new_user = Customer.objects.create(company_name=data_dict['company_name'],
+                                        username=str(data_dict['first_name'])+str(data_dict['last_name']),
+                                        first_name=data_dict['first_name'],
+                                        last_name=data_dict['first_name'],
+                                        email=data_dict['email'],
+                                        phone_number=data_dict['phone_number'],
+                                        sales_contact=Employee.objects.get(id=data_dict['sales_contact']),
+                                        status='CUSTOMER')
+    if len(data_dict['last_contact']) != 0:
+        new_user.last_contact = data_dict['last_contact']
+    new_user.set_password('password-oc')
+    new_user.save()

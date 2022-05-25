@@ -30,23 +30,13 @@ class ValidToken(permissions.BasePermission):
             raise MissingToken
         
 
-class IsSuperUser(permissions.BasePermission):
-    """ Give the permission to CRUD any object if he is a SuperUser"""
-
-    def has_permission(self, request, view):
-
-        return request.user.is_superuser
-
-    def has_object_permission(self, request, view, obj):
-
-        return request.user.is_superuser
-
-
 class IsManager(permissions.BasePermission):
-    """ Give the permission to CRUD any object if he is a Manager """
+    """ Give the permission to ReadUpdateDelete any object if he is a Manager """
 
     def has_permission(self, request, view):
 
+        if view.action == 'create':
+            return False
         return request.user.status == 'MANAGER'
 
     def has_object_permission(self, request, view, obj):
@@ -74,7 +64,7 @@ class EmployeePerm(permissions.BasePermission):
             return True
 
 
-class CustomerListPerm(permissions.BasePermission):
+class CustomerPerm(permissions.BasePermission):
     """
     List : Give the permissions if the user is a member of the staff.
     Object : If he the user is a manager, add the Update and Delete method.
@@ -222,26 +212,6 @@ class EventPerm(permissions.BasePermission):
                 return request.user.status == 'MANAGER'
 
 
-class FreeEventPerm(permissions.BasePermission):
-    """
-    List : Give access to the Manager only, but forbidden his Create ability.
-    Object : Give access to the Manager only.
-    """
-    def has_permission(self, request, view):
-        
-        if request.user.status == 'MANAGER':
-            if view.action == 'create':
-                return False
-            return True
-        else:
-            return False
-
-    def has_object_permission(self, request, view, obj):
-        
-        if request.user.status == 'MANAGER':
-            return True
-        
-
 class AccountPerm(permissions.BasePermission):
     """
     List : Give access to every user but forbidden their Create ability
@@ -249,24 +219,14 @@ class AccountPerm(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        
+
         if view.action != 'create':
             return True
-        
+
     def has_object_permission(self, request, view, obj):
-        
+
         if view.action == 'destroy':
             return False
         return True
 
 
-class NotAssignedEmployeePerm(permissions.BasePermission):
-    """ Give permission to every MANAGER """
-
-    def has_permission(self, request, view):
-        if request.user.status == 'MANAGER': 
-            return True
-    
-    def has_object_permission(self, request, view, obj):
-        if request.user.status == 'MANAGER': 
-            return True
