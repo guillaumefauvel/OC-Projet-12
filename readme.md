@@ -1,6 +1,7 @@
 # EpicEvents CRM - Projet 12 / OC
 
-API sécurisé réservé à la gestion client et à l'organisation d'évènement. 
+API sécurisé réservé à la gestion client et à l'organisation d'évènement.  
+La documentation Postman propre aux requêtes et à leurs réponses est présent sur ce lien : *[Documentation](https://documenter.getpostman.com/view/18501202/Uz5AqyTa)*.
 
 &nbsp;
 
@@ -10,6 +11,27 @@ API sécurisé réservé à la gestion client et à l'organisation d'évènement
 2. Mettez en place un environnement virtuel (Avec notamment `virtual env`)
 3. Installer les dépendances avec un `pip install -r requirements.txt`
 4. Lancer le serveur avec un `python manage.py runserver`
+5. Connectez-vous avec le lien `/login/` en indiquant dans le body de la requête le `username` et le `password`.
+6. Récupérer votre token en effectuant une requête POST avec un rappel de vos identifiants (`username:password`) à l'adresse `/obtain-token/`. 
+7. Insérer votre token dans le header Key : `Authorization` / Value : `token your_token` pour toutes vos prochaînes requêtes.
+
+&nbsp;
+
+
+### <ins>Identifiants de démonstration :
+
+&nbsp;
+
+
+| Username | Password | STATUS |
+| ----------- | ----------- | ----- | 
+| admin | password-oc | `SuperUser ( ADMIN PANNEL )`|
+| jean-manage | password-oc | `MANAGER` |
+| henry-support | password-oc | `SUPPORT` |
+| louis-sales | password-oc | `SALES` |
+| fredSNCF | password-oc | `CUSTOMER` |
+
+
 
 &nbsp;
 
@@ -77,7 +99,7 @@ API sécurisé réservé à la gestion client et à l'organisation d'évènement
 | `contract/` | Une liste des contrats affiliés |`GET`|`GET`, `POST`|`GET`|`GET`, `POST`|
 | `contract/<contract_id>` | Un contrat |`GET`, `PUT`|`GET`, `PUT`, `DELETE`|`GET`|`GET`, `PUT`, `DELETE`|
 | `event/` | Une liste des évènements affiliés |`GET`|`GET`|`GET`|`GET`|
-| `event/<event_id>` | Un contract |`GET`|`GET`|`GET`, `PUT`, `DELETE`|`GET`, `PUT`, `DELETE`|
+| `event/<event_id>` | Un contract |`GET`|`GET`|`GET`, `PUT`|`GET`, `PUT`, `DELETE`|
 | `free-event/` | Une liste des évènements non affectés ||||`GET`|
 | `free-event/<event_id>` | Un évènement non affecté ||||`GET`, `PUT`, `DELETE`|
 | `account/` | Les informations de l'utilisateur connecté |`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|`GET`, `PUT`|

@@ -29,3 +29,9 @@ class ObjectDeleted(APIException):
     status_code = 410
     default_detail = 'The object has been deleted'
     default_code = '4027'
+    
+    
+class MissingSalesContact(APIException):
+    status_code = 403
+    default_detail = 'You should specified a sales_contact'
+    default_code = '4027'

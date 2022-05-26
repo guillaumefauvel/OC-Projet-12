@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
-from login.exceptions import ObjectDeleted
+from login.exceptions import ObjectDeleted, MissingSalesContact
 from login.models import User, Employee, Customer
 from .models import Prospect, Provider, Contract, Event
 from login.permissions import (ProspectPerm, ProviderPerm, ContractPerm,
@@ -184,7 +184,9 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
         data_dict = self.request.data
 
         if self.request.method == 'PUT' and 'converted' in data_dict:
+            print("--")
             if data_dict['converted'] == 'true':
+                print("---")
                 create_user_from_prospect(data_dict)
                 
                 prospect_obj.delete()
@@ -219,6 +221,9 @@ class FreeProspectViewSet(ModelViewSet):
 
         if self.request.method == 'PUT' and 'converted' in data_dict:
             if data_dict['converted'] == 'true':
+                if not data_dict['sales_contact']:
+                    raise MissingSalesContact
+
                 create_user_from_prospect(data_dict)
                 
                 prospect_obj.delete()

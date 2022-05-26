@@ -81,7 +81,7 @@ class Event(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     modified_date = models.DateField(auto_now=True)
 
-    providers = models.ManyToManyField(Provider)
+    providers = models.ManyToManyField(Provider, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name
