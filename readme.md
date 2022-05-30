@@ -1,4 +1,9 @@
+
+<center>
+
 # EpicEvents CRM - Projet 12 / OC
+</center>
+
 
 API sécurisé réservé à la gestion client et à l'organisation d'évènement.  
 La documentation Postman propre aux requêtes et à leurs réponses est présent sur ce lien : *[Documentation](https://documenter.getpostman.com/view/18501202/Uz5AqyTa)*.
@@ -6,6 +11,7 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 &nbsp;
 
 # Lancement du projet
+
 
 1. Tout d'abord, cloner le repository sur votre machine.  
 2. Mettez en place un environnement virtuel (Avec notamment `virtual env`)
@@ -22,7 +28,6 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 &nbsp;
 
-
 | Username | Password | STATUS |
 | ----------- | ----------- | ----- | 
 | admin | password-oc | `SuperUser ( ADMIN PANNEL )`|
@@ -34,8 +39,10 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 
 &nbsp;
+<center>
 
-## Diagramme Entité-Relation : 
+## <ins>Diagramme Entité-Relation : 
+</center>
 
 ---
 
@@ -43,8 +50,9 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 &nbsp;
 
+<center>
 
-## Logique métier derrière la création d'un Customer ou d'un Event :
+## <ins>Logique métier derrière la création d'un Customer ou d'un Event :
 
 ---
 
@@ -58,6 +66,7 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 &nbsp;
 
 #  <ins>Gestion de projet :
+</center>
 
 &nbsp;
 
@@ -109,10 +118,11 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 > Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/home/`. &nbsp;
 
 &nbsp;
+<center>
 
 ##  <ins>Fonctionnement des affiliations
+</center>
 
----
 
 &nbsp;
 
@@ -132,8 +142,10 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 &nbsp;
 
+<center>
 
 ##  <ins>Utilisation des filtres
+</center>
 
 ---
 
