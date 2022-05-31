@@ -3,7 +3,7 @@ from datetime import date
 from rest_framework.serializers import ModelSerializer, ChoiceField, SerializerMethodField
 
 from .models import Prospect, Provider, Contract, Event
-from login.models import User, Customer, Employee
+from login.models import Customer, Employee
 
 
 class CustomerSerializer(ModelSerializer):

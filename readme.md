@@ -5,26 +5,25 @@
 </center>
 
 
-API sécurisé réservé à la gestion client et à l'organisation d'évènement.  
-La documentation Postman propre aux requêtes et à leurs réponses est présent sur ce lien : *[Documentation](https://documenter.getpostman.com/view/18501202/Uz5AqyTa)*.
+API sécurisée réservée à la gestion client et à l'organisation d'évènement.  
+La documentation Postman propre aux requêtes et à leurs réponses est présente sur ce lien : *[Documentation](https://documenter.getpostman.com/view/18501202/Uz5AqyTa)*.
 
 &nbsp;
 
-# Lancement du projet
+# 🚀 Lancement du projet
 
 
-1. Tout d'abord, cloner le repository sur votre machine.  
-2. Mettez en place un environnement virtuel (Avec notamment `virtual env`)
-3. Installer les dépendances avec un `pip install -r requirements.txt`
-4. Lancer le serveur avec un `python manage.py runserver`
+1. Tout d'abord, clonez le repository sur votre machine.  
+2. Mettez en place un environnement virtuel (ex : `virtual env`)
+3. Installez les dépendances avec un `pip install -r requirements.txt`
+4. Lancez le serveur avec un `python manage.py runserver`
 5. Connectez-vous avec le lien `/login/` en indiquant dans le body de la requête le `username` et le `password`.
 6. Récupérer votre token en effectuant une requête POST avec un rappel de vos identifiants (`username:password`) à l'adresse `/obtain-token/`. 
-7. Insérer votre token dans le header Key : `Authorization` / Value : `token your_token` pour toutes vos prochaînes requêtes.
+7. Insérer votre token dans le Header,  Key : `Authorization` / Value : `token your_token` pour toutes vos prochaînes requêtes.
 
 &nbsp;
 
-
-### <ins>Identifiants de démonstration :
+### <ins> Identifiants de démonstration :
 
 &nbsp;
 
@@ -36,12 +35,11 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 | louis-sales | password-oc | `SALES` |
 | fredSNCF | password-oc | `CUSTOMER` |
 
-
-
 &nbsp;
 <center>
 
 ## <ins>Diagramme Entité-Relation : 
+
 </center>
 
 ---
@@ -66,11 +64,12 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 &nbsp;
 
 #  <ins>Gestion de projet :
+
 </center>
 
 &nbsp;
 
-###  <ins>Authentification et gestion du compte :
+###  🔐<ins>Authentification et gestion du compte :
 
 &nbsp;
 
@@ -87,22 +86,22 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 &nbsp;
 
-###  <ins>CRM : 
+###  📌<ins>CRM : 
 
 &nbsp;
 
 | Requête | Réponse | Customer | Sales | Support | Manager |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
-| `free-employee/` | Une liste de tous les employés non affiliés ||||`GET`|
-| `free-employee/<employee_id>` | Un employé non affiliés ||||`GET`, `PUT`, `DELETE`|
+| `free-employee/` | Une liste de tous les employés sans manager ||||`GET`|
+| `free-employee/<employee_id>` | Un employé sans manager ||||`GET`, `PUT`, `DELETE`|
 | `employee/` | Une liste de tous les employés affiliés ||||`GET`|
-| `employee/<employee_id>` | Un employé ||||`GET`, `PUT`, `DELETE`|
+| `employee/<employee_id>` | Un employé  ||||`GET`, `PUT`, `DELETE`|
 | `customer/` | Une liste des clients affiliés ||`GET`|`GET`|`GET`|
 | `customer/<customer_id>` | Un client ||`GET`|`GET`|`GET`, `PUT`, `DELETE`|
 | `prospect/` | Une liste des prospects affiliés ||`GET`, `POST`||`GET`, `POST`|
 | `prospect/<prospect_id>` | Un prospect ||`GET`, `PUT`||`GET`, `PUT`, `DELETE`|
 | `free-prospect/` | Une liste des prospects non affectés ||||`GET`, `POST`|
-| `free-prospect/<prospect_id>` | Une prospect non affecté ||||`GET`, `PUT`, `DELETE`|
+| `free-prospect/<prospect_id>` | Un prospect non affecté ||||`GET`, `PUT`, `DELETE`|
 | `provider/` | Une liste des fournisseurs ||`GET`|`GET`|`GET`, `POST`|
 | `provider/<provider_id>` | Un fournisseur ||`GET`|`GET`|`GET`, `PUT`, `DELETE`|
 | `contract/` | Une liste des contrats affiliés |`GET`|`GET`, `POST`|`GET`|`GET`, `POST`|
@@ -115,12 +114,13 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 ||||
 ||||
 
-> Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/home/`. &nbsp;
+> Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/home/`.
 
 &nbsp;
+
 <center>
 
-##  <ins>Fonctionnement des affiliations
+##  🗃️<ins>Fonctionnement des affiliations
 </center>
 
 
@@ -129,14 +129,14 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 | Requête | Customer | Sales | Support | Manager |
 | ----------- | ----------- | ----------- | ----------- | ----------- | 
 | `employee/` |  |  |  | Employee.manager |
-| `prospect/` |  | Customer.sales_contact |  | Tout les Prospect rattachés aux Sales qu'il manage |
-| `customer/` |  | Customer.sales_contact | Event.support_id | Tout les Customer rattachés aux Employee qu'il manage |
-| `contract/` | Contract.customer_id | Contract.sales_contact | Tout les Contract rattachés aux Event qu'il gère  | Tout les Contract rattachés aux Sales qu'il manage |
-| `event/` | Event.customer_id |  | Event.support_id |  Tout les Event rattachés aux Support qu'il manage  |
+| `prospect/` |  | Customer.sales_contact |  | Tout les Prospects rattachés aux Sales qu'il manage |
+| `customer/` |  | Customer.sales_contact | Event.support_id | Tout les Customers rattachés aux Employees qu'il manage |
+| `contract/` | Contract.customer_id | Contract.sales_contact | Tout les Contracts rattachés aux Events qu'il gère  | Tout les Contracts rattachés aux Sales qu'il manage |
+| `event/` | Event.customer_id |  | Event.support_id |  Tout les Event rattachés aux Supports qu'il manage  |
 ||||
 ||||
 
-> Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/home/`. &nbsp;
+> Tous les points d'entrée précèdant suppose en racine l'adresse `http://localhost:8000/home/`.
 
 > `Employee.manager` à la première ligne signifie : Tout les objects `Employee` ayant pour FK l'id du Manager à l'attribut `.manager`. La logique est la même pour les autres lignes abbrégées de la même manière.*
 
@@ -144,7 +144,8 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 <center>
 
-##  <ins>Utilisation des filtres
+##  🧐<ins>Utilisation des filtres
+
 </center>
 
 ---
@@ -163,6 +164,7 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 *DATE\* format = '2022-05-19'*
 
 ### <ins>Exemple de requête filtrante : 
+
 "Tout les contrats impayés et signés ayant pour client l'utilisateur numéro 7 et un prix situé entre 5000 et 20000 euros."
 
  - Requête : `home/contract/?customer_id=7&price__gte=5000&price__lte=20000&payed=false&signed=true`

@@ -10,7 +10,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from . import serializers as logserializer
 from login.models import User, Customer, Employee
-from . import exceptions, permissions
+from . import permissions
 
 
 @permission_classes([permissions.EmployeeCreationPerm, permissions.ValidToken])

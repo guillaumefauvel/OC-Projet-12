@@ -1,14 +1,19 @@
 from django.contrib import admin
+
 from . import models
+
 
 class ProspectAdmin(admin.ModelAdmin):
     list_display = ('company_name', 'email', 'sales_contact', 'last_contact')
 
+
 class ProviderAdmin(admin.ModelAdmin):
     list_display = ('company_name', 'email', 'type')
     
+    
 class ContractAdmin(admin.ModelAdmin):
     list_display = ('title', 'customer_id', 'sales_contact', 'price', 'signed')
+
 
 class EventAdmin(admin.ModelAdmin):
     list_display = ('name', 'contract_id', 'contract_id', 'support_id', 'customer_id', 'due_date')

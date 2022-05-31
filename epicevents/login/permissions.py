@@ -4,10 +4,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from login.exceptions import InvalidToken, MissingToken
 from rest_framework import permissions
 from rest_framework.authtoken.models import Token
-from django.core.exceptions import ObjectDoesNotExist
 
-from login.models import User, Employee, Customer
-from app.models import Prospect, Provider, Contract, Event
+from login.models import Employee
+from app.models import Contract, Event
 
 
 class ValidToken(permissions.BasePermission):

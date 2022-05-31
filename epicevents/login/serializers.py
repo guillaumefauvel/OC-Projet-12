@@ -1,6 +1,5 @@
 from django.db.models import Q
 from rest_framework import serializers
-from django.contrib.auth import login, authenticate, logout
 
 from rest_framework.serializers import (
     CharField,
@@ -10,8 +9,8 @@ from rest_framework.serializers import (
     SerializerMethodField,
     ChoiceField,
 )
-
 from .models import User, Employee, Customer
+
 
 class EmployeeCreateSerializer(ModelSerializer):
 
