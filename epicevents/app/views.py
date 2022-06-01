@@ -184,9 +184,9 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
         data_dict = self.request.data
 
         if self.request.method == 'PUT' and 'converted' in data_dict:
-            print("--")
+
             if data_dict['converted'] == 'true':
-                print("---")
+
                 create_user_from_prospect(data_dict)
                 
                 prospect_obj.delete()
@@ -280,10 +280,20 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
             contract_qs = Contract.objects.filter(id__in=event_ids)
         if user_status == 'MANAGER':
             managed_employees = Employee.objects.filter(manager=user_connected)
+            
+            # Getting the contract linked to the SALES Employees the user Manage.
             contracts_queryset = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]
             chain_contracts = list(chain(*contracts_queryset))
             contracts_ids = [contract.id for contract in chain_contracts]
-            contract_qs = Contract.objects.filter(id__in=contracts_ids)  
+            
+            # Getting the contract linked to the event of the SUPPORT Employees the user Manage.
+            events_queryset = [Event.objects.filter(support_id=managed_employee.id) for managed_employee in managed_employees]
+            chain_events = list(chain(*events_queryset))
+            contracts_ids_from_event = [event.contract_id.id for event in chain_events]
+            
+            contracts_ids.extend(contracts_ids_from_event)         
+            
+            contract_qs = Contract.objects.filter(id__in=set(contracts_ids_from_event))  
                   
         return contract_qs
 
@@ -344,10 +354,22 @@ class EventViewSet(EventSerializerAdapter, ModelViewSet):
             selected_events = Event.objects.filter(support_id=user_connected)
         if user_status == 'MANAGER':
             managed_employees = [Employee.objects.filter(manager=user_connected)][0]
+            
+            # Getting the event linked to the SUPPORT employees the user Manage.
             selected_events = [Event.objects.filter(support_id=employee.id) for employee in managed_employees]
             chained_events = list(chain(*selected_events))
             events_ids = [contract.id for contract in chained_events]
-            selected_events = Event.objects.filter(id__in=events_ids) 
+            
+            # Getting the event linked to the contract of the SALES employees the user Manage.
+            contracts_queryset = [Contract.objects.filter(sales_contact=managed_employee.id) for managed_employee in managed_employees]
+            chain_contracts = list(chain(*contracts_queryset))
+            contracts_ids = [contract.id for contract in chain_contracts]
+            event_linked_contract = [event.id for event in Event.objects.filter(contract_id__in=contracts_ids)]
+            
+            events_ids.extend(event_linked_contract)
+
+            selected_events = Event.objects.filter(id__in=set(events_ids)) 
+
 
         return selected_events
 
