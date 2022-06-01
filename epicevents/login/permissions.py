@@ -101,7 +101,7 @@ class ProspectPerm(permissions.BasePermission):
     """
     
     def has_permission(self, request, view):
-        
+
         return request.user.status in ['MANAGER', 'SALES']
 
     def has_object_permission(self, request, view, obj):
@@ -114,9 +114,11 @@ class ProspectPerm(permissions.BasePermission):
                 associated_user.append(obj.sales_contact.manager.id)
 
         if request.user.id in associated_user:
+            print(request.user.id, associated_user)
             if view.action == 'destroy':
                 return request.user.status == 'MANAGER'
             return True
+
 
 
 class ProviderPerm(permissions.BasePermission):

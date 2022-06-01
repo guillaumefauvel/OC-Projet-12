@@ -131,8 +131,8 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 | `employee/` |  |  |  | Employee.manager |
 | `prospect/` |  | Customer.sales_contact |  | Tout les Prospects rattachés aux Sales qu'il manage |
 | `customer/` |  | Customer.sales_contact | Event.support_id | Tout les Customers rattachés aux Employees qu'il manage |
-| `contract/` | Contract.customer_id | Contract.sales_contact | Tout les Contracts rattachés aux Events qu'il gère  | Tout les Contracts rattachés aux Sales qu'il manage |
-| `event/` | Event.customer_id |  | Event.support_id |  Tout les Event rattachés aux Supports qu'il manage  |
+| `contract/` | Contract.customer_id | Contract.sales_contact | Tout les Contracts rattachés aux Events qu'il gère  | Tout les Contracts rattachés aux Sales/Support qu'il manage |
+| `event/` | Event.customer_id | Tout les Events rattachés aux Contracts qu'il gère | Event.support_id |  Tout les Event rattachés aux Supports/Sales qu'il manage  |
 ||||
 ||||
 

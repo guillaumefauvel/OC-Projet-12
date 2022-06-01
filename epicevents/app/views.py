@@ -5,6 +5,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
 from login.exceptions import ObjectDeleted, MissingSalesContact
 from login.models import User, Employee, Customer
@@ -76,7 +77,10 @@ class ContractSerializerAdapter:
     def get_serializer_class(self):
 
         if 'pk' in self.kwargs:
-            contract_obj = Contract.objects.get(id=self.kwargs['pk'])
+            try:
+                contract_obj = Contract.objects.get(id=self.kwargs['pk'])
+            except ObjectDoesNotExist:
+                return self.sales_serializer_class
 
             if self.request.user.status != 'CUSTOMER' and contract_obj.signed == True:
                 return self.sales_signed_contract_serializer_class
@@ -177,10 +181,10 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
 
         return prospect_qs
 
-
     def get_object(self):
-
         prospect_obj = get_object_or_404(Prospect, pk=self.kwargs['pk'])
+        self.check_object_permissions(self.request, prospect_obj)
+
         data_dict = self.request.data
 
         if self.request.method == 'PUT' and 'converted' in data_dict:
@@ -217,6 +221,8 @@ class FreeProspectViewSet(ModelViewSet):
     def get_object(self):
 
         prospect_obj = get_object_or_404(Prospect, pk=self.kwargs['pk'])
+        self.check_object_permissions(self.request, prospect_obj)
+        
         data_dict = self.request.data
 
         if self.request.method == 'PUT' and 'converted' in data_dict:
@@ -231,6 +237,7 @@ class FreeProspectViewSet(ModelViewSet):
                 raise ObjectDeleted      
             
         return prospect_obj
+
 
 @permission_classes([IsAuthenticated, ValidToken, ProviderPerm])
 class ProviderViewSet(ModelViewSet):
@@ -299,7 +306,9 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
 
     def get_object(self):
         
-        contract_obj = Contract.objects.get(id=self.kwargs['pk'])
+        contract_obj = get_object_or_404(Contract, pk=self.kwargs['pk'])
+        self.check_object_permissions(self.request, contract_obj)
+        
         signed = False
         
         if self.request.method == 'PUT':
@@ -402,6 +411,7 @@ class NotAssignedEmployeeViewSet(ModelViewSet):
 
 
 def create_user_from_prospect(data_dict):
+    """ Create a user from a dict """
     
     new_user = Customer.objects.create(company_name=data_dict['company_name'],
                                         username=str(data_dict['first_name'])+str(data_dict['last_name']),
