@@ -25,7 +25,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=32)
     password = models.CharField(max_length=128)
 
-    status = models.CharField(max_length=10, default=USER_TYPE)
+    status = models.CharField(max_length=100, choices=USER_TYPE)
 
     def __str__(self):
          return self.username

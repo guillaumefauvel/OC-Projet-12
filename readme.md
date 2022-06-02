@@ -12,10 +12,32 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 # 🚀 Lancement du projet
 
+#### <ins>Mise en place de la database 
 
 1. Tout d'abord, clonez le repository sur votre machine.  
 2. Mettez en place un environnement virtuel (ex : `virtual env`)
 3. Installez les dépendances avec un `pip install -r requirements.txt`
+4. Installez [PostGreSQL](https://www.postgresql.org) ainsi que  [pgAdmin](https://www.pgadmin.org) afin d'importer la base de données.
+5. Importez la base de données situé : `datas/database.sql`.
+6. Liiez la base de données au settings afin quelles coïncide entre elles.
+
+```json
+#settings.py
+
+DATABASES = {
+    'default': {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': 'epic_db',
+    'USER' : 'postgres',
+    'PASSWORD' : '1234',
+    'HOST' : 'localhost',
+    'PORT' : '5432',
+}
+}
+```
+
+#### <ins>Connection
+
 4. Lancez le serveur avec un `python manage.py runserver`
 5. Connectez-vous avec le lien `/login/` en indiquant dans le body de la requête le `username` et le `password`.
 6. Récupérer votre token en effectuant une requête POST avec un rappel de vos identifiants (`username:password`) à l'adresse `/obtain-token/`. 
@@ -29,11 +51,11 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 | Username | Password | STATUS |
 | ----------- | ----------- | ----- | 
-| admin | password-oc | `SuperUser ( ADMIN PANNEL )`|
+| admin-oc | password-oc | `SuperUser ( ADMIN PANNEL )`|
 | jean-manage | password-oc | `MANAGER` |
-| henry-support | password-oc | `SUPPORT` |
-| louis-sales | password-oc | `SALES` |
-| fredSNCF | password-oc | `CUSTOMER` |
+| maurice-sales | password-oc | `SALES` |
+| jeanedgard-support | password-oc | `SUPPORT` |
+| MarieDupont | password-oc | `CUSTOMER` |
 
 &nbsp;
 <center>

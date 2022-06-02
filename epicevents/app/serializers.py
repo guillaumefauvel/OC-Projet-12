@@ -63,7 +63,7 @@ class EmployeeSerializer(ModelSerializer):
 
     def get_events(self, instance):
 
-        events = Event.objects.filter(support_id=instance.id).filter(due_date__lte=date.today().strftime("%Y-%m-%d"))
+        events = Event.objects.filter(support_id=instance.id)
         serializer = EventSerializerSynthetic(events, many=True)
         return serializer.data
 
