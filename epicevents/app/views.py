@@ -200,10 +200,13 @@ class ProspectViewSet(SalesManagementSerializerAdapter, ModelViewSet):
         return prospect_obj
     
     def perform_create(self, serializer):
-        
+                
         if self.request.user.status == 'SALES':
             serializer.save(sales_contact=Employee.objects.get(id=self.request.user.id))
-        
+        else:
+            serializer.save()
+
+            
     
 @permission_classes([IsAuthenticated, ValidToken, IsManager])
 class FreeProspectViewSet(ModelViewSet):
@@ -298,9 +301,9 @@ class ContractViewSet(ContractSerializerAdapter, ModelViewSet):
             chain_events = list(chain(*events_queryset))
             contracts_ids_from_event = [event.contract_id.id for event in chain_events]
             
-            contracts_ids.extend(contracts_ids_from_event)         
-            
-            contract_qs = Contract.objects.filter(id__in=set(contracts_ids_from_event))  
+            contracts_ids.extend(contracts_ids_from_event)  
+                               
+            contract_qs = Contract.objects.filter(id__in=contracts_ids)  
                   
         return contract_qs
 
@@ -377,7 +380,7 @@ class EventViewSet(EventSerializerAdapter, ModelViewSet):
             
             events_ids.extend(event_linked_contract)
 
-            selected_events = Event.objects.filter(id__in=set(events_ids)) 
+            selected_events = Event.objects.filter(id__in=events_ids) 
 
 
         return selected_events

@@ -34,7 +34,6 @@ class CustomerSynthetic(ModelSerializer):
                   'phone_number']
 
 
-
 class EmployeeSyntheticSerializer(ModelSerializer):
     
     class Meta:

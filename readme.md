@@ -129,7 +129,7 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 | Requête | Customer | Sales | Support | Manager |
 | ----------- | ----------- | ----------- | ----------- | ----------- | 
 | `employee/` |  |  |  | Employee.manager |
-| `prospect/` |  | Customer.sales_contact |  | Tout les Prospects rattachés aux Sales qu'il manage |
+| `prospect/` |  | Prospect.sales_contact |  | Tout les Prospects rattachés aux Sales qu'il manage |
 | `customer/` |  | Customer.sales_contact | Event.support_id | Tout les Customers rattachés aux Employees qu'il manage |
 | `contract/` | Contract.customer_id | Contract.sales_contact | Tout les Contracts rattachés aux Events qu'il gère  | Tout les Contracts rattachés aux Sales/Support qu'il manage |
 | `event/` | Event.customer_id | Tout les Events rattachés aux Contracts qu'il gère | Event.support_id |  Tout les Event rattachés aux Supports/Sales qu'il manage  |
@@ -153,7 +153,7 @@ La documentation Postman propre aux requêtes et à leurs réponses est présent
 
 | Requête | Filtre1 | Filtre2 | Filtre3 | Filtre4 | Filtre5 | Filtre6 | Filtre7 |
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | 
-| `contract/` | title__icontains(STR) | customer_id(INT) | sales_contact(INT) | payed(BOOL) | signed(BOOL)  | price__lte(INT) | price__lte(INT)
+| `contract/` | title__icontains(STR) | customer_id(INT) | sales_contact(INT) | payed(BOOL) | signed(BOOL)  | price__lte(INT) | price__gte(INT)
 | `prospect/` | company_name__icontains(STR) | sales_contact(INT) | last_contact__gte(DATE*) | last_contact__lte(DATE*) |||
 | `customer/` | username__icontains(STR) | sales_contact(INT) | | ||||
 | `employee/` | username__icontains(STR) | status(STR) | | ||||
